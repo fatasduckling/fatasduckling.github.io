@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Strategy Blackjack Trainer</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #0b6623; color: white; padding: 20px; margin: 0; }
+        #game { max-width: 900px; margin: 0 auto; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; }
+        .section { margin: 20px 0; }
+        .cards { display: flex; justify-content: center; min-height: 160px; gap: 10px; flex-wrap: wrap; }
+        .card-img { height: 150px; border-radius: 8px; box-shadow: 3px 3px 10px rgba(0,0,0,0.5); }
+        button { background: #c3992a; color: white; border: none; padding: 12px 24px; margin: 8px; font-size: 18px; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #d4af37; }
+
+        /* Settings Layout */
+        .settings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; text-align: left; }
+        .setting-item label { font-size: 14px; font-weight: bold; color: gold; }
+        .setting-item select, .setting-item input { width: 100%; padding: 8px; margin-top: 5px; }
+
+        #settings-menu {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95); padding: 30px; border-radius: 15px; z-index: 100; border: 3px solid gold;
+            width: 90%; max-width: 600px;
+        }
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99; }
+    </style>
+</head>
+<body>
+
+<button id="settings-btn">⚙️ Settings</button>
+<div id="overlay"></div>
+
+<div id="settings-menu">
+    <h2>Game Settings</h2>
+    <div class="settings-grid">
+        <div class="setting-item">
+            <label>Decks:</label><br>
+            <select id="num-decks">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="6" selected>6</option>
+                <option value="8">8</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <label>Dealer Soft 17:</label><br>
+            <select id="soft17">
+                <option value="true" selected>Hits</option>
+                <option value="false">Stands</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <label>Late Surrender:</label><br>
+            <select id="surrender">
+                <option value="true" selected>Enabled</option>
+                <option value="false">Disabled</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <label>Blackjack Payout:</label><br>
+            <select id="bj-payout">
+                <option value="1.5" selected>3:2</option>
+                <option value="1.2">6:5</option>
+            </select>
+        </div>
+        <div class="setting-item" style="grid-column: span 3;">
+            <label>Starting Bankroll ($):</label>
+            <input type="number" id="starting-bankroll" value="5000" style="width: 100%;">
+        </div>
+    </div>
+    <button id="apply-settings-btn">Apply & Close</button>
+</div>
+
+<div id="game">
+    <h1>Basic Strategy Blackjack Trainer</h1>
+    
+    <div class="section">
+        <p>
+            Bankroll: $<span id="bankroll">5000</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Decks Left: <span id="decks-left">6.0</span>
+        </p>
+        <p id="play-accuracy">Correct plays: 0/0 (0%)</p>
+        <p>
+            Bet: $<input type="number" id="bet-input" value="25" min="25">
+            <button id="deal-button">Deal Hand</button>
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Dealer Hand: <span id="dealer-total">?</span></h2>
+        <div id="dealer-cards" class="cards"></div>
+    </div>
+
+    <div class="section">
+        <h2>Your Hand: <span id="player-total">?</span></h2>
+        <div id="player-cards" class="cards"></div>
+    </div>
+
+    <div id="insurance-actions" class="section" style="display:none;">
+        <p style="color:orange; font-size:1.2em;">Dealer shows Ace. Take Insurance?</p>
+        <button id="insurance-btn">Take Insurance</button>
+        <button id="no-insurance-btn">Decline</button>
+    </div>
+
+    <div id="actions" class="section" style="display:none;">
+        <button id="hit-btn">Hit</button>
+        <button id="stand-btn">Stand</button>
+        <button id="double-btn">Double</button>
+        <button id="split-btn">Split</button>
+        <button id="surrender-btn">Surrender</button>
+    </div>
+
+    <div class="section">
+        <p id="feedback">Ready — press Deal</p>
+    </div>
+
+    <div class="section">
+        <p id="result"></p>
+    </div>
+</div>
+
+<script>
+// Global State
+let deck = [], playerHands = [], dealerHand = [];
+let bankroll = 5000, currentBet = 25, currentHandIndex = 0;
+let gamePhase = 'betting', moveJustMade = false;
+let totalDecisions = 0, correctDecisions = 0;
+
+// Settings
+let numDecks = 6, dealerHitsSoft17 = true, surrenderEnabled = true, bjPayout = 1.5;
+
+const suits = ['♠', '♥', '♦', '♣'];
+const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+/** INITIALIZATION **/
+function createDeck() {
+    deck = [];
+    for (let d = 0; d < numDecks; d++) {
+        suits.forEach(s => ranks.forEach(r => deck.push(r + s)));
+    }
+    deck.sort(() => Math.random() - 0.5);
+}
+
+function dealCard(toHand) {
+    if (deck.length < 20) createDeck();
+    const card = deck.pop();
+    toHand.push(card);
+    return card;
+}
+
+function calculateTotal(hand) {
+    let total = 0, aces = 0;
+    hand.forEach(c => {
+        let v = c.slice(0, -1);
+        v = (['J','Q','K'].includes(v)) ? 10 : (v === 'A' ? 11 : parseInt(v));
+        if (v === 11) aces++;
+        total += v;
+    });
+    while (total > 21 && aces--) total -= 10;
+    return total;
+}
+
+function getCardImageHTML(card) {
+    const suitMap = { '♠': 'spades', '♥': 'hearts', '♦': 'diamonds', '♣': 'clubs' };
+    const rankMap = { 'A': 'ace', 'J': 'jack', 'Q': 'queen', 'K': 'king' };
+    const r = card.slice(0, -1);
+    const s = card.slice(-1);
+    const fileName = `${rankMap[r] || r}_of_${suitMap[s]}.svg`.toLowerCase();
+    return `<img src="cards/${fileName}" class="card-img" alt="${card}">`;
+}
+
+/** BASIC STRATEGY ONLY **/
+function getCorrectAction(hand, upVal) {
+    const total = calculateTotal(hand);
+    const isPair = hand.length === 2 && hand[0].slice(0,-1) === hand[1].slice(0,-1);
+
+    if (isPair) {
+        const val = calculateTotal([hand[0]]);
+        if (val === 11 || val === 8) return 'split';
+        if (val === 10) return 'stand';
+        if (val === 9) return (upVal >= 2 && upVal <= 9 && upVal !== 7) ? 'split' : 'stand';
+        // Add more pair rules if needed - this is simplified
+    }
+    if (total >= 17) return 'stand';
+    if (total >= 13 && total <= 16 && upVal <= 6) return 'stand';
+    if (total === 12 && upVal >= 4 && upVal <= 6) return 'stand';
+    if (total === 11) return 'double';
+    if (total === 10 && upVal <= 9) return 'double';
+    if (total === 9 && upVal >= 3 && upVal <= 6) return 'double';
+    return 'hit';
+}
+
+/** GAMEPLAY **/
+function updateDisplay() {
+    document.getElementById('bankroll').innerText = bankroll.toLocaleString();
+    document.getElementById('decks-left').innerText = (deck.length / 52).toFixed(1);
+    
+    const pct = totalDecisions === 0 ? 0 : Math.round((correctDecisions / totalDecisions) * 100);
+    document.getElementById('play-accuracy').innerText = `Correct plays: ${correctDecisions}/${totalDecisions} (${pct}%)`;
+
+    const hideDealer = (gamePhase === 'playing' || gamePhase === 'insurance');
+    document.getElementById('dealer-cards').innerHTML = hideDealer 
+        ? `<img src="cards/back.svg" class="card-img">` + getCardImageHTML(dealerHand[0])
+        : dealerHand.map(getCardImageHTML).join('');
+    
+    document.getElementById('dealer-total').innerText = hideDealer ? '?' : calculateTotal(dealerHand);
+    const hand = playerHands[currentHandIndex] || [];
+    document.getElementById('player-cards').innerHTML = hand.map(getCardImageHTML).join('');
+    document.getElementById('player-total').innerText = calculateTotal(hand);
+
+    document.getElementById('actions').style.display = (gamePhase === 'playing') ? 'block' : 'none';
+    document.getElementById('deal-button').style.display = (gamePhase === 'betting') ? 'inline-block' : 'none';
+}
+
+function startHand() {
+    currentBet = parseInt(document.getElementById('bet-input').value) || 25;
+    if (currentBet > bankroll) { alert("Insufficient funds!"); return; }
+    
+    bankroll -= currentBet;
+    playerHands = [[]]; dealerHand = []; currentHandIndex = 0; gamePhase = 'playing'; moveJustMade = false;
+    document.getElementById('result').innerText = '';
+    document.getElementById('feedback').innerText = 'Dealer dealt. Your move...';
+
+    dealCard(playerHands[0]); dealCard(dealerHand); dealCard(playerHands[0]); dealCard(dealerHand);
+    
+    if (dealerHand[0].startsWith('A')) gamePhase = 'insurance';
+    updateDisplay();
+}
+
+function playerMove(action) {
+    const hand = playerHands[currentHandIndex];
+    const upVal = dealerHand[0].slice(0, -1) === 'A' ? 11 : (['J','Q','K'].includes(dealerHand[0].slice(0,-1)) ? 10 : parseInt(dealerHand[0].slice(0,-1)));
+
+    if (!moveJustMade) {
+        totalDecisions++;
+        const correct = getCorrectAction(hand, upVal);
+        if (action === correct) {
+            correctDecisions++;
+            document.getElementById('feedback').innerText = "✓ Correct!";
+            document.getElementById('feedback').style.color = "lime";
+        } else {
+            document.getElementById('feedback').innerText = `✗ Wrong - correct was ${correct.toUpperCase()}`;
+            document.getElementById('feedback').style.color = "red";
+        }
+        moveJustMade = true;
+    }
+
+    if (action === 'hit') { dealCard(hand); if (calculateTotal(hand) > 21) nextHand(); }
+    else if (action === 'stand') nextHand();
+    else if (action === 'surrender') { bankroll += currentBet / 2; nextHand(); }
+    else if (action === 'double') { bankroll -= currentBet; currentBet *= 2; dealCard(hand); nextHand(); }
+    
+    updateDisplay();
+}
+
+function nextHand() {
+    if (currentHandIndex < playerHands.length - 1) { currentHandIndex++; moveJustMade = false; }
+    else dealerPlay();
+}
+
+function dealerPlay() {
+    gamePhase = 'dealer-turn';
+    updateDisplay();
+    const step = () => {
+        const total = calculateTotal(dealerHand);
+        const isSoft17 = total === 17 && dealerHand.some(c => c.startsWith('A')) && (total - 10 <= 11);
+        if (total < 17 || (isSoft17 && dealerHitsSoft17)) {
+            dealCard(dealerHand); updateDisplay(); setTimeout(step, 600);
+        } else evaluateResults();
+    };
+    setTimeout(step, 600);
+}
+
+function evaluateResults() {
+    const dTotal = calculateTotal(dealerHand);
+    playerHands.forEach(h => {
+        const pTotal = calculateTotal(h);
+        if (pTotal <= 21) {
+            if (pTotal === 21 && h.length === 2 && dTotal !== 21) bankroll += currentBet * (1 + bjPayout);
+            else if (dTotal > 21 || pTotal > dTotal) bankroll += currentBet * 2;
+            else if (pTotal === dTotal) bankroll += currentBet;
+        }
+    });
+
+    gamePhase = 'betting';
+    document.getElementById('feedback').innerText = "Round over — press Deal for next hand";
+    updateDisplay();
+}
+
+/** SETTINGS **/
+function applySettings() {
+    numDecks = parseInt(document.getElementById('num-decks').value);
+    dealerHitsSoft17 = document.getElementById('soft17').value === 'true';
+    surrenderEnabled = document.getElementById('surrender').value === 'true';
+    bjPayout = parseFloat(document.getElementById('bj-payout').value);
+    bankroll = parseInt(document.getElementById('starting-bankroll').value);
+
+    document.getElementById('settings-menu').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+    createDeck();
+    updateDisplay();
+}
+
+document.getElementById('settings-btn').onclick = () => {
+    document.getElementById('settings-menu').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+};
+
+document.getElementById('apply-settings-btn').onclick = applySettings;
+
+document.getElementById('deal-button').onclick = startHand;
+document.getElementById('hit-btn').onclick = () => playerMove('hit');
+document.getElementById('stand-btn').onclick = () => playerMove('stand');
+document.getElementById('surrender-btn').onclick = () => playerMove('surrender');
+document.getElementById('double-btn').onclick = () => playerMove('double');
+
+// Initialize
+createDeck();
+updateDisplay();
+</script>
+
+</body>
+</html>
