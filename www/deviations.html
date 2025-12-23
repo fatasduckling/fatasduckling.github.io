@@ -46,7 +46,7 @@
         }
         /* Make Player Hand column wider */
         th:first-child, td:first-child {
-            width: 28%; /* Increased from default to fit "Insurance" fully */
+            width: 28%; 
             text-align: left;
             padding-left: 15px;
         }
@@ -115,7 +115,7 @@
     <p>Blank cells = No valuable deviation – always follow basic strategy.</p>
     <p>These indexes are for Hi-Lo counting in multi-deck games with typical rules.</p>
 
-    <h2>Illustrious 18 – Primary Playing Deviations</h2>
+    <h2>Illustrious 18 – Complete Playing Deviations</h2>
     <table>
         <caption>Illustrious 18 Index Plays (True Count to Deviate)</caption>
         <tr>
@@ -136,7 +136,7 @@
             <td colspan="10" class="insurance">Take at TC +3 or higher</td>
         </tr>
         <tr>
-            <td><strong>16</strong></td>
+            <td><strong>16 vs 10</strong></td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
@@ -149,7 +149,7 @@
             <td>-</td>
         </tr>
         <tr>
-            <td><strong>15</strong></td>
+            <td><strong>15 vs 10</strong></td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
@@ -162,46 +162,7 @@
             <td>-</td>
         </tr>
         <tr>
-            <td><strong>13</strong></td>
-            <td class="stand">-1</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-        </tr>
-        <tr>
-            <td><strong>12</strong></td>
-            <td class="stand">+3</td>
-            <td class="stand">+2</td>
-            <td class="stand">0</td>
-            <td class="stand">-2</td>
-            <td class="stand">-1</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-        </tr>
-        <tr>
-            <td><strong>11</strong></td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td class="double">+1</td>
-        </tr>
-        <tr>
-            <td><strong>10</strong></td>
+            <td><strong>10 vs 10</strong></td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
@@ -211,28 +172,197 @@
             <td>-</td>
             <td>-</td>
             <td class="double">+4</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>10 vs A</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
             <td class="double">+3</td>
         </tr>
         <tr>
-            <td><strong>9</strong></td>
+            <td><strong>12 vs 3</strong></td>
+            <td>-</td>
+            <td class="stand">+2</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>12 vs 2</strong></td>
+            <td class="stand">+3</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>11 vs A</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="double">+1</td>
+        </tr>
+        <tr>
+            <td><strong>9 vs 2</strong></td>
             <td class="double">+1</td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
-            <td class="double">+3</td>
+            <td>-</td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
         </tr>
         <tr>
-            <td><strong>10-10 (Pair)</strong></td>
+            <td><strong>12 vs 4</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td class="stand">0</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>12 vs 5</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="stand">-2</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>12 vs 6</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="stand">-1</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>13 vs 2</strong></td>
+            <td class="stand">-1</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>9 vs 7</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="double">+3</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>16 vs 9</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
             <td class="stand">+5</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>13 vs 3</strong></td>
+            <td>-</td>
+            <td class="stand">0</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>10-10 vs 5</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="stand">+5</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>10-10 vs 6</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
             <td class="stand">+4</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>8 vs 6</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="double">+2</td>
             <td>-</td>
             <td>-</td>
             <td>-</td>
