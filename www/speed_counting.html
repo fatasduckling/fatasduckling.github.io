@@ -68,20 +68,26 @@
         /* Settings Menu */
         .settings-grid { 
             display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
+            grid-template-columns: 1fr; 
+            gap: 20px; 
             margin-bottom: 20px; 
             text-align: left; 
         }
         .setting-item label { 
-            font-size: 14px; 
+            font-size: 16px; 
             font-weight: bold; 
             color: gold; 
+            display: block;
+            margin-bottom: 8px;
         }
-        .setting-item input, .setting-item select { 
-            width: 100%; 
-            padding: 8px; 
-            margin-top: 5px; 
+        .setting-item input[type=range] {
+            width: 100%;
+        }
+        .setting-item span {
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+            font-size: 18px;
         }
         #settings-menu {
             display: none; 
@@ -109,7 +115,6 @@
         }
 
         #feedback { font-size: 24px; margin: 20px; min-height: 40px; }
-        input[type=number], select { padding: 10px; font-size: 18px; }
         #omitted-reveal { font-size: 28px; margin: 20px 0; min-height: 180px; }
 
         /* Back to Menu Button */
@@ -135,16 +140,9 @@
     <h2>Speed Counting Settings</h2>
     <div class="settings-grid">
         <div class="setting-item">
-            <label>Default Card Speed (ms):</label>
+            <label>Card Display Speed (ms)</label>
             <input type="range" id="default-speed" min="200" max="2000" value="800" step="100">
             <span id="default-speed-value">800 ms</span>
-        </div>
-        <div class="setting-item">
-            <label>Deck Mode Card Display:</label><br>
-            <select id="deck-display-mode">
-                <option value="replace">Replace previous card (fast drill)</option>
-                <option value="accumulate" selected>Accumulate all cards</option>
-            </select>
         </div>
     </div>
     <button id="apply-settings-btn">Apply & Close</button>
@@ -157,14 +155,8 @@
         <label>Mode:</label><br>
         <select id="mode-select">
             <option value="batch">Batch Mode (5-10 cards at once)</option>
-            <option value="deck">Deck Mode (51 cards shown, guess omitted)</option>
+            <option value="deck">Deck Mode (guess omitted card)</option>
         </select>
-    </div>
-    
-    <div class="section" id="speed-control">
-        <label>Card display speed (ms):</label><br>
-        <input type="range" id="speed-slider" min="200" max="2000" value="800" step="100">
-        <span id="speed-value">800 ms</span>
     </div>
     
     <div class="section">
@@ -179,6 +171,7 @@
         <button id="start-deck">Start Full Deck</button>
     </div>
     
+    <!-- Only one card shown at a time in Deck Mode -->
     <div class="section cards" id="cards-display"></div>
     
     <div class="section" id="guess-section" style="display:none;">
@@ -198,14 +191,12 @@ const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
 let fullDeck = [];
-let shownCards = [];
 let omittedCard = null;
 let omittedValue = 0;
 let correct = 0;
 let total = 0;
 let mode = 'batch';
-let cardDelay = 800;
-let deckDisplayMode = 'accumulate'; // 'replace' or 'accumulate'
+let cardDelay = 800; // default
 
 function createFullDeck() {
     fullDeck = [];
@@ -239,7 +230,7 @@ function updateAccuracy() {
 function startBatch() {
     createFullDeck();
     const numCards = Math.floor(Math.random() * 6) + 5; // 5-10
-    shownCards = fullDeck.slice(0, numCards);
+    const shownCards = fullDeck.slice(0, numCards);
     const runningCount = shownCards.reduce((sum, c) => sum + getHiLoValue(c), 0);
     
     document.getElementById('cards-display').innerHTML = shownCards.map(getCardImageHTML).join('');
@@ -259,7 +250,6 @@ function startDeckMode() {
     omittedCard = fullDeck.splice(omitIndex, 1)[0];
     omittedValue = getHiLoValue(omittedCard);
     
-    shownCards = [];
     document.getElementById('cards-display').innerHTML = '';
     document.getElementById('guess-section').style.display = 'none';
     document.getElementById('feedback').innerText = '';
@@ -279,15 +269,8 @@ function nextCardInDeck() {
     
     const card = fullDeck.pop();
     
-    if (deckDisplayMode === 'replace') {
-        // Only show current card (delete previous)
-        shownCards = [card];
-    } else {
-        // Accumulate all shown cards
-        shownCards.push(card);
-    }
-    
-    document.getElementById('cards-display').innerHTML = shownCards.map(getCardImageHTML).join('');
+    // Always show ONLY the current card — previous one disappears
+    document.getElementById('cards-display').innerHTML = getCardImageHTML(card);
     
     setTimeout(nextCardInDeck, cardDelay);
 }
@@ -320,27 +303,16 @@ function checkGuess() {
     }, 4000);
 }
 
-// Speed slider (live adjustment)
-document.getElementById('speed-slider').oninput = function() {
-    cardDelay = parseInt(this.value);
-    document.getElementById('speed-value').innerText = `${cardDelay} ms`;
-};
-
-// Settings menu
+// Settings
 document.getElementById('settings-btn').onclick = () => {
     document.getElementById('settings-menu').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('default-speed').value = cardDelay;
     document.getElementById('default-speed-value').innerText = `${cardDelay} ms`;
-    document.getElementById('deck-display-mode').value = deckDisplayMode;
 };
 
 document.getElementById('apply-settings-btn').onclick = () => {
     cardDelay = parseInt(document.getElementById('default-speed').value);
-    deckDisplayMode = document.getElementById('deck-display-mode').value;
-    document.getElementById('speed-slider').value = cardDelay;
-    document.getElementById('speed-value').innerText = `${cardDelay} ms`;
-    
     document.getElementById('settings-menu').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
 };
@@ -370,7 +342,6 @@ document.getElementById('guess-input').addEventListener('keypress', function(e) 
 
 // Initial
 updateAccuracy();
-document.getElementById('speed-value').innerText = `${cardDelay} ms`;
 </script>
 
 </body>
