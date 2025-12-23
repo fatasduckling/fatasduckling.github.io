@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basic Strategy Charts</title>
+    <title>Index Plays & Deviations</title>
     <style>
         body { 
             background: #0b6623; 
@@ -16,34 +16,44 @@
         h1 { text-align: center; margin-bottom: 30px; }
         h2 { color: gold; margin-top: 40px; border-bottom: 1px solid gold; padding-bottom: 10px; }
         p { max-width: 900px; margin: 20px auto; font-size: 18px; }
+        ul { max-width: 900px; margin: 20px auto; font-size: 18px; }
+        li { margin-bottom: 15px; }
         strong { color: gold; }
-        .section { margin: 30px 0; text-align: center; }
-        select, button {
-            padding: 12px 20px;
-            font-size: 18px;
-            margin: 10px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
+        .highlight { 
+            background: rgba(255,215,0,0.2); 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-weight: bold; 
         }
-        select { background: #c3992a; color: white; width: 80%; max-width: 600px; }
-        button { background: #c3992a; color: white; }
-        button:hover { background: #d4af37; }
-        #chart-container {
-            margin: 40px auto;
-            max-width: 900px;
-            padding: 20px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
+        table { 
+            width: 95%; 
+            max-width: 900px; 
+            margin: 30px auto; 
+            border-collapse: collapse; 
+            font-size: 16px; 
+            table-layout: fixed;
         }
-        #chart-title { text-align: center; font-size: 22px; margin-bottom: 20px; }
-        #chart-svg {
-            width: 100%;
-            height: auto;
-            max-height: 85vh;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-            background: white;
+        th, td { 
+            padding: 12px 8px; 
+            text-align: center; 
+            border: 1px solid gold; 
+            word-wrap: break-word;
+        }
+        th { 
+            background: rgba(0,0,0,0.4); 
+            color: gold; 
+            font-size: 15px; 
+        }
+        .stand { background: rgba(0,255,0,0.25); color: white; font-weight: bold; } /* Green for STAND */
+        .double { background: rgba(0,0,255,0.25); color: white; font-weight: bold; } /* Blue for DOUBLE */
+        .surrender { background: rgba(255,0,0,0.25); color: white; font-weight: bold; } /* Red for SURRENDER */
+        .insurance { background: rgba(255,165,0,0.3); color: white; font-weight: bold; } /* Orange for Insurance */
+        caption { 
+            font-size: 20px; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            color: gold; 
+            caption-side: top;
         }
         .legend {
             max-width: 800px;
@@ -65,11 +75,6 @@
             vertical-align: middle;
             margin-right: 10px;
         }
-        .hit { background: #ff4444; }     /* Red */
-        .stand { background: #44ff44; }   /* Green */
-        .double { background: #4444ff; }  /* Blue */
-        .split { background: #ffaa00; }   /* Orange */
-        .surrender { background: #aa00aa; } /* Purple */
         .back-btn {
             display: block;
             width: 200px;
@@ -87,91 +92,197 @@
 </head>
 <body>
 
-    <h1>Basic Strategy Charts</h1>
+    <h1>Index Plays & Deviations (Illustrious 18 + Fab 4)</h1>
 
-    <p style="text-align:center;">Select your exact game rules below to view the <strong>perfect basic strategy chart</strong> for those conditions.</p>
-
-    <div class="section">
-        <label for="game-select"><strong>Select Game Rules:</strong></label><br>
-        <select id="game-select">
-            <option value="4-8-deck-shoe-hits-soft-17">4–8 Decks – Dealer Hits Soft 17 (No Surrender)</option>
-            <option value="4-8-deck-shoe-stays-soft-17">4–8 Decks – Dealer Stands on Soft 17 (No Surrender)</option>
-            <option value="4-8-deck-shoe-hits-soft-17-surrender">4–8 Decks – Hits Soft 17 + Late Surrender</option>
-            <option value="4-8-deck-shoe-stays-soft-17-surrender">4–8 Decks – Stands Soft 17 + Late Surrender</option>
-            <option value="double-deck-hits-soft-17">Double Deck – Dealer Hits Soft 17</option>
-            <option value="double-deck-stays-soft-17">Double Deck – Dealer Stands on Soft 17</option>
-            <option value="single-deck-hits-soft-17">Single Deck – Dealer Hits Soft 17</option>
-            <option value="single-deck-stays-soft-17">Single Deck – Dealer Stands on Soft 17</option>
-        </select>
-        
-        <button onclick="showChart()">Show Strategy Chart</button>
-    </div>
+    <p style="text-align:center; font-size:20px;"><strong>These are the most valuable changes from basic strategy when the True Count is high enough. Mastering them adds a huge edge when card counting.</strong></p>
 
     <div class="legend">
         <strong>Color Legend – What Each Color Means:</strong><br><br>
-        <div class="legend-item"><span class="legend-color hit"></span><strong>Red</strong> – Hit</div>
-        <div class="legend-item"><span class="legend-color stand"></span><strong>Green</strong> – Stand</div>
-        <div class="legend-item"><span class="legend-color double"></span><strong>Blue</strong> – Double Down (if allowed, else Hit)</div>
-        <div class="legend-item"><span class="legend-color split"></span><strong>Orange</strong> – Split</div>
-        <div class="legend-item"><span class="legend-color surrender"></span><strong>Purple</strong> – Surrender (if allowed, else Hit)</div>
+        <div class="legend-item"><span class="legend-color" style="background:rgba(0,255,0,0.6);"></span><strong>Green</strong> – Stand instead of Hit</div>
+        <div class="legend-item"><span class="legend-color" style="background:rgba(0,0,255,0.6);"></span><strong>Blue</strong> – Double instead of Hit</div>
+        <div class="legend-item"><span class="legend-color" style="background:rgba(255,0,0,0.6);"></span><strong>Red</strong> – Surrender instead of Hit</div>
+        <div class="legend-item"><span class="legend-color" style="background:rgba(255,165,0,0.6);"></span><strong>Orange</strong> – Take Insurance</div>
     </div>
 
-    <p style="text-align:center; font-size:18px;">
-        <strong>Tip:</strong> Always use the chart that matches your table rules (decks + soft 17 + surrender). 
-        Even small rule changes affect the correct play!
-    </p>
+    <h2>How to Use These Tables</h2>
+    <p>The number in each cell is the <strong>True Count threshold</strong>. When the True Count is <strong>equal to or higher</strong> than this number, make the colored play instead of basic strategy.</p>
+    <p>Blank cells = No valuable deviation – always follow basic strategy.</p>
+    <p>These indexes are for Hi-Lo counting in multi-deck games with typical rules.</p>
 
-    <div id="chart-container" style="display:none;">
-        <h2 id="chart-title">Basic Strategy Chart</h2>
-        <img id="chart-svg" src="" alt="Basic Strategy Chart">
-    </div>
+    <h2>Illustrious 18 – Primary Playing Deviations</h2>
+    <table>
+        <caption>Illustrious 18 Index Plays (True Count to Deviate)</caption>
+        <tr>
+            <th>Player Hand</th>
+            <th>vs 2</th>
+            <th>vs 3</th>
+            <th>vs 4</th>
+            <th>vs 5</th>
+            <th>vs 6</th>
+            <th>vs 7</th>
+            <th>vs 8</th>
+            <th>vs 9</th>
+            <th>vs 10</th>
+            <th>vs A</th>
+        </tr>
+        <tr>
+            <td><strong>Insurance</strong></td>
+            <td colspan="10" class="insurance">Take at TC +3 or higher</td>
+        </tr>
+        <tr>
+            <td><strong>16</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="stand">0</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>15</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="stand">+4</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>13</strong></td>
+            <td class="stand">-1</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>12</strong></td>
+            <td class="stand">+3</td>
+            <td class="stand">+2</td>
+            <td class="stand">0</td>
+            <td class="stand">-2</td>
+            <td class="stand">-1</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>11</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="double">+1</td>
+        </tr>
+        <tr>
+            <td><strong>10</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="double">+4</td>
+            <td class="double">+3</td>
+        </tr>
+        <tr>
+            <td><strong>9</strong></td>
+            <td class="double">+1</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="double">+3</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td><strong>10-10 (Pair)</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="stand">+5</td>
+            <td class="stand">+4</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+    </table>
+
+    <h2>Fab 4 – Surrender Deviations (Only if Late Surrender Allowed)</h2>
+    <table>
+        <caption>Fab 4 Surrender Indexes (True Count to Surrender)</caption>
+        <tr>
+            <th>Player Total</th>
+            <th>vs 9</th>
+            <th>vs 10</th>
+            <th>vs A</th>
+        </tr>
+        <tr>
+            <td><strong>17</strong></td>
+            <td>-</td>
+            <td>-</td>
+            <td class="surrender">+2</td>
+        </tr>
+        <tr>
+            <td><strong>16</strong></td>
+            <td class="surrender">+5</td>
+            <td class="surrender">0</td>
+            <td class="surrender">+1</td>
+        </tr>
+        <tr>
+            <td><strong>15</strong></td>
+            <td class="surrender">+3</td>
+            <td class="surrender">0</td>
+            <td class="surrender">+1</td>
+        </tr>
+        <tr>
+            <td><strong>14</strong></td>
+            <td>-</td>
+            <td class="surrender">+3</td>
+            <td>-</td>
+        </tr>
+    </table>
+
+    <h2>Tips for Learning & Using Deviations</h2>
+    <ul>
+        <li>Memorize the Illustrious 18 first – they give ~80% of the counting edge from indexes</li>
+        <li>Fab 4 only applies when late surrender is offered (common in multi-deck shoe games)</li>
+        <li>Insurance at +3 is the single most valuable play – never miss it!</li>
+        <li>Use the full counting trainer in this app – it gives feedback when you should have deviated</li>
+        <li>Start slow: only use the top 5–10 indexes until comfortable</li>
+        <li>Deviations only make sense when you’re accurately keeping the True Count</li>
+    </ul>
+
+    <p style="text-align:center; font-size:20px;"><strong>Practice these consistently and watch your advantage grow!</strong></p>
 
     <a href="index.html" class="back-btn">← Back to Menu</a>
-
-    <script>
-        const charts = {
-            "4-8-deck-shoe-hits-soft-17": "charts/4-8-deck-shoe-hits-soft-17.svg",
-            "4-8-deck-shoe-stays-soft-17": "charts/4-8-deck-shoe-stays-soft-17.svg",
-            "4-8-deck-shoe-hits-soft-17-surrender": "charts/4-8-deck-shoe-hits-soft-17-surrender.svg",
-            "4-8-deck-shoe-stays-soft-17-surrender": "charts/4-8-deck-shoe-stays-soft-17-surrender.svg",
-            "double-deck-hits-soft-17": "charts/double-deck-hits-soft-17.svg",
-            "double-deck-stays-soft-17": "charts/double-deck-stays-soft-17.svg",
-            "single-deck-hits-soft-17": "charts/single-deck-hits-soft-17.svg",
-            "single-deck-stays-soft-17": "charts/single-deck-stays-soft-17.svg"
-        };
-
-        const titles = {
-            "4-8-deck-shoe-hits-soft-17": "4–8 Decks – Dealer Hits Soft 17 (No Surrender)",
-            "4-8-deck-shoe-stays-soft-17": "4–8 Decks – Dealer Stands on Soft 17 (No Surrender)",
-            "4-8-deck-shoe-hits-soft-17-surrender": "4–8 Decks – Hits Soft 17 + Late Surrender Allowed",
-            "4-8-deck-shoe-stays-soft-17-surrender": "4–8 Decks – Stands Soft 17 + Late Surrender Allowed",
-            "double-deck-hits-soft-17": "Double Deck – Dealer Hits Soft 17",
-            "double-deck-stays-soft-17": "Double Deck – Dealer Stands on Soft 17",
-            "single-deck-hits-soft-17": "Single Deck – Dealer Hits Soft 17",
-            "single-deck-stays-soft-17": "Single Deck – Dealer Stands on Soft 17"
-        };
-
-        function showChart() {
-            const selected = document.getElementById('game-select').value;
-            const chartPath = charts[selected];
-            const chartTitle = titles[selected];
-
-            if (chartPath) {
-                document.getElementById('chart-svg').src = chartPath;
-                document.getElementById('chart-title').innerText = chartTitle;
-                document.getElementById('chart-container').style.display = 'block';
-                document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth' });
-            } else {
-                alert("Chart not available for this rule set.");
-            }
-        }
-
-        // Show the most common chart on page load
-        window.onload = function() {
-            document.getElementById('game-select').value = "4-8-deck-shoe-hits-soft-17";
-            showChart();
-        };
-    </script>
 
 </body>
 </html>
