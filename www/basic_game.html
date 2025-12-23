@@ -149,6 +149,13 @@
             </select>
         </div>
         <div class="setting-item">
+            <label>Blackjack Payout:</label><br>
+            <select id="bj-payout">
+                <option value="1.5" selected>3:2</option>
+                <option value="1.2">6:5</option>
+            </select>
+        </div>
+        <div class="setting-item">
             <label>Decks:</label><br>
             <select id="num-decks">
                 <option value="1">1</option>
@@ -226,7 +233,8 @@ let gamePhase = 'betting';
 let totalDecisions = 0, correctDecisions = 0;
 
 // Settings
-let numDecks = 6, dealerHitsSoft17 = true, surrenderEnabled = true, doubleAfterSplit = true;
+let numDecks = 6, dealerHitsSoft17 = true, surrenderEnabled = true, bjPayout = 1.5;
+let doubleAfterSplit = true;
 let numSimultaneousHands = 1;
 
 const suits = ['♠', '♥', '♦', '♣'];
@@ -261,12 +269,12 @@ function rankValue(card) {
     if (['J','Q','K'].includes(r)) return '10';
     return r;
 }
-function isSplittable(hand) {
-    return hand.cards.length === 2 && rankValue(hand.cards[0]) === rankValue(hand.cards[1]) && playerHands.length < 4;
+function isSplittable(handObj) {
+    return handObj.cards.length === 2 && rankValue(handObj.cards[0]) === rankValue(handObj.cards[1]) && playerHands.length < 4;
 }
-function handTotal(hand) {
+function handTotal(handObj) {
     let total = 0, aces = 0;
-    hand.cards.forEach(c => {
+    handObj.cards.forEach(c => {
         let v = rankValue(c);
         if (v === 'A') { aces++; v = 11; }
         else v = parseInt(v);
@@ -337,18 +345,30 @@ function updateActionButtons() {
 
     actions.forEach(act => {
         let show = true;
-        if (act === 'double') {
-            if (hand.length > 2 && !doubleAfterSplit) show = false;
-            if (hand.length !== 2 && doubleAfterSplit) show = false;
+        let legal = false;
+
+        if (act === 'hit' || act === 'stand') {
+            show = true;
+            legal = true;
         }
-        if (act === 'split' && !isSplittable(handObj)) show = false;
-        if (act === 'surrender' && (!surrenderEnabled || hand.length > 2)) show = false;
+        if (act === 'double') {
+            show = true; // Always show double button
+            legal = (hand.length === 2) || (hand.length > 2 && doubleAfterSplit);
+        }
+        if (act === 'split') {
+            show = true; // Always show split button
+            legal = isSplittable(handObj);
+        }
+        if (act === 'surrender') {
+            show = true;
+            legal = surrenderEnabled && hand.length === 2;
+        }
 
         if (show) {
             const btn = document.createElement('button');
             btn.textContent = act.charAt(0).toUpperCase() + act.slice(1);
             btn.onclick = () => playerMove(act);
-            if (correct.has(act)) btn.classList.add('legal');
+            if (legal) btn.classList.add('legal');
             container.appendChild(btn);
         }
     });
@@ -408,6 +428,16 @@ function startHand() {
 function playerMove(action) {
     const handObj = playerHands[currentHandIndex];
     const hand = handObj.cards;
+
+    // Check legality before allowing move
+    let legal = false;
+    if (action === 'hit' || action === 'stand') legal = true;
+    if (action === 'double') legal = (hand.length === 2) || (hand.length > 2 && doubleAfterSplit);
+    if (action === 'split') legal = isSplittable(handObj);
+    if (action === 'surrender') legal = surrenderEnabled && hand.length === 2;
+
+    if (!legal) return; // Prevent illegal moves
+
     const correct = getCorrectAction(handObj);
     totalDecisions++;
     if (correct.has(action)) {
@@ -474,7 +504,7 @@ function evaluateAllHands() {
         const pTotal = handTotal(h);
         if (pTotal > 21) return;
         if (pTotal === 21 && h.cards.length === 2) {
-            bankroll += h.bet * (2 + 1.5); // Blackjack payout
+            bankroll += h.bet * (2 + bjPayout);
         } else if (dTotal > 21 || pTotal > dTotal) {
             bankroll += h.bet * 2;
         } else if (pTotal === dTotal) {
@@ -500,6 +530,7 @@ function applySettings() {
     numDecks = parseInt(document.getElementById('num-decks').value);
     dealerHitsSoft17 = document.getElementById('soft17').value === 'true';
     surrenderEnabled = document.getElementById('surrender').value === 'true';
+    bjPayout = parseFloat(document.getElementById('bj-payout').value);
     doubleAfterSplit = document.getElementById('das').value === 'true';
     numSimultaneousHands = parseInt(document.getElementById('num-hands').value);
     bankroll = parseInt(document.getElementById('starting-bankroll').value) || 5000;
