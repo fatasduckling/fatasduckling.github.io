@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Counting Trainer (Premium)</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #0b6623; color: white; padding: 20px; margin: 0; }
+        #game { max-width: 900px; margin: 0 auto; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; }
+        .section { margin: 20px 0; }
+        .cards { display: flex; justify-content: center; min-height: 160px; gap: 10px; flex-wrap: wrap; }
+        .card-img { height: 150px; border-radius: 8px; box-shadow: 3px 3px 10px rgba(0,0,0,0.5); }
+        button { background: #c3992a; color: white; border: none; padding: 12px 24px; margin: 8px; font-size: 18px; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #d4af37; }
+        .premium { background: #d4af37; color: black; font-weight: bold; }
+        #feedback { font-size: 24px; margin: 20px; }
+        input[type=number] { padding: 10px; font-size: 18px; width: 100px; }
+    </style>
+</head>
+<body>
+
+<div id="game">
+    <h1>Speed Counting Trainer (Premium)</h1>
+    
+    <div class="section">
+        <label>Mode:</label><br>
+        <select id="mode-select">
+            <option value="batch">Batch Mode (5-10 cards at once)</option>
+            <option value="deck">Deck Mode (full deck one by one)</option>
+        </select>
+    </div>
+    
+    <div class="section">
+        <p>Correct guesses: <span id="correct">0</span> / <span id="total">0</span> (<span id="accuracy">0%</span>)</p>
+    </div>
+    
+    <div class="section" id="batch-controls">
+        <button id="start-batch">Start New Batch</button>
+    </div>
+    
+    <div class="section" id="deck-controls" style="display:none;">
+        <button id="start-deck">Start Full Deck</button>
+    </div>
+    
+    <div class="section cards" id="cards-display"></div>
+    
+    <div class="section" id="guess-section" style="display:none;">
+        <p id="prompt">What is the running count?</p>
+        <input type="number" id="guess-input" placeholder="Enter RC">
+        <button id="submit-guess">Submit Guess</button>
+        <p id="feedback"></p>
+    </div>
+    
+    <div class="section">
+        <button onclick="location.href='index.html'">Back to Menu</button>
+    </div>
+</div>
+
+<script>
+const suits = ['♠', '♥', '♦', '♣'];
+const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+let deck = [];
+let currentCards = [];
+let runningCount = 0;
+let correct = 0;
+let total = 0;
+let mode = 'batch';
+
+function createFullDeck() {
+    deck = [];
+    suits.forEach(s => ranks.forEach(r => deck.push(r + s)));
+    deck.sort(() => Math.random() - 0.5);
+}
+
+function getHiLoValue(card) {
+    const r = card.slice(0, -1);
+    if (['2','3','4','5','6'].includes(r)) return 1;
+    if (['10','J','Q','K','A'].includes(r)) return -1;
+    return 0;
+}
+
+function getCardImageHTML(card) {
+    const suitMap = { '♠': 'spades', '♥': 'hearts', '♦': 'diamonds', '♣': 'clubs' };
+    const rankMap = { 'A': 'ace', 'J': 'jack', 'Q': 'queen', 'K': 'king' };
+    const r = card.slice(0, -1);
+    const s = card.slice(-1);
+    const fileName = `${rankMap[r] || r}_of_${suitMap[s]}.svg`.toLowerCase();
+    return `<img src="cards/${fileName}" class="card-img" alt="${card}">`;
+}
+
+function updateAccuracy() {
+    const pct = total === 0 ? 0 : Math.round((correct / total) * 100);
+    document.getElementById('accuracy').innerText = `${pct}%`;
+}
+
+function startBatch() {
+    createFullDeck();
+    const numCards = Math.floor(Math.random() * 6) + 5; // 5-10
+    currentCards = deck.splice(0, numCards);
+    runningCount = currentCards.reduce((sum, c) => sum + getHiLoValue(c), 0);
+    
+    document.getElementById('cards-display').innerHTML = currentCards.map(getCardImageHTML).join('');
+    document.getElementById('guess-section').style.display = 'block';
+    document.getElementById('prompt').innerText = 'What is the running count for these cards?';
+    document.getElementById('feedback').innerText = '';
+    document.getElementById('guess-input').value = '';
+    document.getElementById('guess-input').focus();
+}
+
+function startDeckMode() {
+    createFullDeck();
+    runningCount = 0;
+    currentCards = [];
+    document.getElementById('cards-display').innerHTML = '';
+    document.getElementById('guess-section').style.display = 'none';
+    nextCardInDeck();
+}
+
+function nextCardInDeck() {
+    if (deck.length === 0) {
+        // All cards shown except last - but wait, for last card guess
+        document.getElementById('prompt').innerText = 'Guess the Hi-Lo value of the FINAL card:';
+        document.getElementById('guess-section').style.display = 'block';
+        document.getElementById('feedback').innerText = '';
+        document.getElementById('guess-input').value = '';
+        return;
+    }
+    
+    const card = deck.pop();
+    currentCards.push(card);
+    const value = getHiLoValue(card);
+    runningCount += value;
+    
+    document.getElementById('cards-display').innerHTML = currentCards.map(getCardImageHTML).join('');
+    
+    // If this is the last card, trigger guess after a delay
+    if (deck.length === 0) {
+        setTimeout(() => {
+            document.getElementById('prompt').innerText = 'What was the Hi-Lo value of the last card shown?';
+            document.getElementById('guess-section').style.display = 'block';
+            document.getElementById('feedback').innerText = '';
+            document.getElementById('guess-input').value = '';
+        }, 1500); // Give time to see the last card
+    } else {
+        setTimeout(nextCardInDeck, 800); // Speed: show next card quickly
+    }
+}
+
+function checkGuess(expected) {
+    const guess = parseInt(document.getElementById('guess-input').value) || 0;
+    total++;
+    if (guess === expected) {
+        correct++;
+        document.getElementById('feedback').innerText = '✓ Correct!';
+        document.getElementById('feedback').style.color = 'lime';
+    } else {
+        document.getElementById('feedback').innerText = `✗ Wrong! Was ${expected}`;
+        document.getElementById('feedback').style.color = 'red';
+    }
+    updateAccuracy();
+    
+    setTimeout(() => {
+        if (mode === 'batch') {
+            document.getElementById('guess-section').style.display = 'none';
+        }
+    }, 2000);
+}
+
+document.getElementById('mode-select').onchange = function() {
+    mode = this.value;
+    document.getElementById('batch-controls').style.display = mode === 'batch' ? 'block' : 'none';
+    document.getElementById('deck-controls').style.display = mode === 'deck' ? 'block' : 'none';
+};
+
+document.getElementById('start-batch').onclick = startBatch;
+document.getElementById('start-deck').onclick = startDeckMode;
+
+document.getElementById('submit-guess').onclick = function() {
+    if (mode === 'batch') {
+        checkGuess(runningCount);
+    } else {
+        // In deck mode, the expected is the value of the very last card
+        const lastCard = currentCards[currentCards.length - 1];
+        const lastValue = getHiLoValue(lastCard);
+        checkGuess(lastValue);
+    }
+};
+
+// Initial setup
+updateAccuracy();
+</script>
+
+</body>
+</html>
