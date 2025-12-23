@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Rules & Basic Strategy</title>
     <style>
         body {
@@ -29,17 +29,29 @@
         button:hover { background: #d4af37; }
         #chart-container {
             margin: 40px auto;
-            max-width: 1200px; /* Increased for larger images */
+            max-width: 100%;
             padding: 20px;
             background: rgba(0,0,0,0.3);
             border-radius: 15px;
+            overflow: hidden; /* Contain the pannable area */
+        }
+        #chart-wrapper {
+            width: 100%;
+            height: 70vh; /* Adjustable height for mobile */
+            overflow: hidden;
+            touch-action: none; /* Improves pinch-zoom performance */
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
         #chart-svg {
             width: 100%;
-            height: auto;
-            max-height: none; /* Removed height restriction */
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            height: 100%;
+            object-fit: contain; /* Ensures SVG fits nicely */
+        }
+        .instructions {
+            font-size: 14px;
+            margin: 10px auto;
+            max-width: 800px;
         }
         .back-btn {
             background: #888;
@@ -48,7 +60,17 @@
             font-size: 20px;
         }
         .back-btn:hover { background: #aaa; }
+
+        @media (max-width: 768px) {
+            #chart-wrapper {
+                height: 60vh;
+            }
+            .instructions {
+                font-size: 16px;
+            }
+        }
     </style>
+    <script src="https://unpkg.com/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
 </head>
 <body>
     <h1>How to Play Blackjack & Basic Strategy Charts</h1>
@@ -65,18 +87,24 @@
             <option value="4-8-deck-shoe-hits-soft-17-surrender">4-8 Decks – Hits Soft 17 + Surrender</option>
             <option value="4-8-deck-shoe-stays-soft-17-surrender">4-8 Decks – Stands Soft 17 + Surrender</option>
             <option value="double-deck-hits-soft-17">Double Deck – Dealer Hits Soft 17</option>
-            <option value="double-deck-stays-soft-17">Double Deck – Dealer Stands Soft 17</option>
+            <option value="double-deck-stays-soft-17">Double Deck – Dealer Stands on Soft 17</option>
             <option value="single-deck-hits-soft-17">Single Deck – Dealer Hits Soft 17</option>
-            <option value="single-deck-stays-soft-17">Single Deck – Dealer Stands Soft 17</option>
+            <option value="single-deck-stays-soft-17">Single Deck – Dealer Stands on Soft 17</option>
         </select>
        
         <button onclick="showChart()">Show Strategy Chart</button>
     </div>
+
     <div id="chart-container" style="display:none;">
         <h2 id="chart-title">Basic Strategy Chart</h2>
-        <img id="chart-svg" src="" alt="Basic Strategy Chart">
+        <p class="instructions">On mobile: Use pinch-to-zoom and drag to pan the chart for easier reading.</p>
+        <div id="chart-wrapper">
+            <img id="chart-svg" src="" alt="Basic Strategy Chart">
+        </div>
     </div>
+
     <button class="back-btn" onclick="location.href='index.html'">← Back to Menu</button>
+
     <script>
         const charts = {
             "4-8-deck-shoe-hits-soft-17": "charts/4-8-deck-shoe-hits-soft-17.svg",
@@ -98,21 +126,52 @@
             "single-deck-hits-soft-17": "Single Deck – Dealer Hits Soft 17",
             "single-deck-stays-soft-17": "Single Deck – Dealer Stands on Soft 17"
         };
+
+        let panZoomInstance = null;
+
         function showChart() {
             const selected = document.getElementById('game-select').value;
             const chartPath = charts[selected];
             const chartTitle = titles[selected];
+
             if (chartPath) {
-                document.getElementById('chart-svg').src = chartPath;
+                const img = document.getElementById('chart-svg');
+                img.src = chartPath;
                 document.getElementById('chart-title').innerText = chartTitle;
                 document.getElementById('chart-container').style.display = 'block';
-                // Scroll to chart smoothly
-                document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth' });
+
+                // Destroy previous instance if exists
+                if (panZoomInstance) {
+                    panZoomInstance.destroy();
+                    panZoomInstance = null;
+                }
+
+                // Wait for image to load before initializing pan/zoom
+                img.onload = function() {
+                    panZoomInstance = svgPanZoom(img, {
+                        zoomEnabled: true,
+                        panEnabled: true,
+                        controlIconsEnabled: false, // Set to true if you want on-screen buttons
+                        fit: true,
+                        center: true,
+                        minZoom: 1,
+                        maxZoom: 10,
+                        zoomScaleSensitivity: 0.2
+                    });
+
+                    // Better mobile support with Hammer.js (included in svg-pan-zoom)
+                    if (window.Hammer) {
+                        panZoomInstance.setOnPan(function() {}); // Optional tweaks
+                    }
+
+                    document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth' });
+                };
             } else {
                 alert("Chart not available for this rule set.");
             }
         }
-        // Default: show the most common chart on load (4-8 deck, hits soft 17)
+
+        // Default: show the most common chart on load
         window.onload = function() {
             document.getElementById('game-select').value = "4-8-deck-shoe-hits-soft-17";
             showChart();
