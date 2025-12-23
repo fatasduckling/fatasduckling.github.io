@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rules & Basic Strategy</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            background: #0b6623; 
-            color: white; 
-            padding: 20px; 
-            margin: 0; 
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #0b6623;
+            color: white;
+            padding: 20px;
+            margin: 0;
         }
         h1 { margin-bottom: 20px; }
         p { max-width: 800px; margin: 20px auto; line-height: 1.6; }
@@ -29,7 +29,7 @@
         button:hover { background: #d4af37; }
         #chart-container {
             margin: 40px auto;
-            max-width: 900px;
+            max-width: 1200px; /* Increased for larger images */
             padding: 20px;
             background: rgba(0,0,0,0.3);
             border-radius: 15px;
@@ -37,7 +37,7 @@
         #chart-svg {
             width: 100%;
             height: auto;
-            max-height: 80vh;
+            max-height: none; /* Removed height restriction */
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
@@ -51,14 +51,12 @@
     </style>
 </head>
 <body>
-
     <h1>How to Play Blackjack & Basic Strategy Charts</h1>
-    
+   
     <p>The goal is to beat the dealer by getting as close to 21 as possible without going over.<br>
        Face cards (J, Q, K) = 10, Aces = 1 or 11, numbered cards = face value.</p>
-    
+   
     <p>Choose your game rules below to see the correct basic strategy chart.</p>
-
     <div class="section">
         <label for="game-select"><strong>Select Game Type:</strong></label><br>
         <select id="game-select">
@@ -71,17 +69,14 @@
             <option value="single-deck-hits-soft-17">Single Deck – Dealer Hits Soft 17</option>
             <option value="single-deck-stays-soft-17">Single Deck – Dealer Stands Soft 17</option>
         </select>
-        
+       
         <button onclick="showChart()">Show Strategy Chart</button>
     </div>
-
     <div id="chart-container" style="display:none;">
         <h2 id="chart-title">Basic Strategy Chart</h2>
         <img id="chart-svg" src="" alt="Basic Strategy Chart">
     </div>
-
     <button class="back-btn" onclick="location.href='index.html'">← Back to Menu</button>
-
     <script>
         const charts = {
             "4-8-deck-shoe-hits-soft-17": "charts/4-8-deck-shoe-hits-soft-17.svg",
@@ -93,7 +88,6 @@
             "single-deck-hits-soft-17": "charts/single-deck-hits-soft-17.svg",
             "single-deck-stays-soft-17": "charts/single-deck-stays-soft-17.svg"
         };
-
         const titles = {
             "4-8-deck-shoe-hits-soft-17": "4–8 Decks – Dealer Hits Soft 17",
             "4-8-deck-shoe-stays-soft-17": "4–8 Decks – Dealer Stands on Soft 17",
@@ -104,12 +98,10 @@
             "single-deck-hits-soft-17": "Single Deck – Dealer Hits Soft 17",
             "single-deck-stays-soft-17": "Single Deck – Dealer Stands on Soft 17"
         };
-
         function showChart() {
             const selected = document.getElementById('game-select').value;
             const chartPath = charts[selected];
             const chartTitle = titles[selected];
-
             if (chartPath) {
                 document.getElementById('chart-svg').src = chartPath;
                 document.getElementById('chart-title').innerText = chartTitle;
@@ -120,13 +112,11 @@
                 alert("Chart not available for this rule set.");
             }
         }
-
-        // Default: show the most common chart on load (6-deck, hits soft 17)
+        // Default: show the most common chart on load (4-8 deck, hits soft 17)
         window.onload = function() {
             document.getElementById('game-select').value = "4-8-deck-shoe-hits-soft-17";
             showChart();
         };
     </script>
-
 </body>
 </html>
