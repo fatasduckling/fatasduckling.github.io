@@ -5,20 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speed Counting Trainer (Premium)</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #0b6623; color: white; padding: 20px; margin: 0; }
-        #game { max-width: 900px; margin: 0 auto; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-color: #0b6623; 
+            color: white; 
+            padding: 20px; 
+            margin: 0; 
+            position: relative;
+            min-height: 100vh;
+        }
+        #game { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: rgba(0,0,0,0.4); 
+            padding: 20px; 
+            border-radius: 15px; 
+        }
         .section { margin: 20px 0; }
-        .cards { display: flex; justify-content: center; min-height: 160px; gap: 10px; flex-wrap: wrap; }
-        .card-img { height: 150px; border-radius: 8px; box-shadow: 3px 3px 10px rgba(0,0,0,0.5); }
-        button { background: #c3992a; color: white; border: none; padding: 12px 24px; margin: 8px; font-size: 18px; border-radius: 8px; cursor: pointer; }
+        .cards { 
+            display: flex; 
+            justify-content: center; 
+            min-height: 160px; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+        }
+        .card-img { 
+            height: 150px; 
+            border-radius: 8px; 
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.5); 
+        }
+        button { 
+            background: #c3992a; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            margin: 8px; 
+            font-size: 18px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+        }
         button:hover { background: #d4af37; }
-        .premium { background: #d4af37; color: black; font-weight: bold; }
+
+        /* Settings Button - Fixed in top-right corner */
+        #settings-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 200;
+            background: #c3992a;
+            padding: 12px 18px;
+            font-size: 20px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        #settings-btn:hover {
+            background: #d4af37;
+        }
+
+        /* Settings Menu */
+        .settings-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            margin-bottom: 20px; 
+            text-align: left; 
+        }
+        .setting-item label { 
+            font-size: 14px; 
+            font-weight: bold; 
+            color: gold; 
+        }
+        .setting-item input, .setting-item select { 
+            width: 100%; 
+            padding: 8px; 
+            margin-top: 5px; 
+        }
+        #settings-menu {
+            display: none; 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95); 
+            padding: 30px; 
+            border-radius: 15px; 
+            z-index: 100; 
+            border: 3px solid gold;
+            width: 90%; 
+            max-width: 500px;
+        }
+        #overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.7); 
+            z-index: 99; 
+        }
+
         #feedback { font-size: 24px; margin: 20px; min-height: 40px; }
         input[type=number], select { padding: 10px; font-size: 18px; }
         #omitted-reveal { font-size: 28px; margin: 20px 0; min-height: 180px; }
+
+        /* Back to Menu Button */
+        #back-to-menu {
+            margin-top: 40px;
+            background: #888;
+            font-size: 20px;
+            padding: 15px 30px;
+        }
+        #back-to-menu:hover {
+            background: #aaa;
+        }
     </style>
 </head>
 <body>
+
+<!-- Settings Button - Top Right Corner -->
+<button id="settings-btn" title="Settings">⚙️</button>
+
+<!-- Overlay & Settings Menu -->
+<div id="overlay"></div>
+<div id="settings-menu">
+    <h2>Speed Counting Settings</h2>
+    <div class="settings-grid">
+        <div class="setting-item">
+            <label>Default Card Speed (ms):</label>
+            <input type="range" id="default-speed" min="200" max="2000" value="800" step="100">
+            <span id="default-speed-value">800 ms</span>
+        </div>
+        <div class="setting-item">
+            <label>Deck Mode Card Display:</label><br>
+            <select id="deck-display-mode">
+                <option value="replace">Replace previous card (fast drill)</option>
+                <option value="accumulate" selected>Accumulate all cards</option>
+            </select>
+        </div>
+    </div>
+    <button id="apply-settings-btn">Apply & Close</button>
+</div>
 
 <div id="game">
     <h1>Speed Counting Trainer (Premium)</h1>
@@ -38,7 +168,7 @@
     </div>
     
     <div class="section">
-        <p>Correct guesses: <span id="correct">0</span> / <span id="total">0</span> (<span id="accuracy">0%</span>)</p>
+        <p>Correct: <span id="correct">0</span> | Total: <span id="total">0</span> | Accuracy: <span id="accuracy">0%</span></p>
     </div>
     
     <div class="section" id="batch-controls">
@@ -59,9 +189,8 @@
         <div id="omitted-reveal"></div>
     </div>
     
-    <div class="section">
-        <button onclick="location.href='index.html'">Back to Menu</button>
-    </div>
+    <!-- Back to Menu Button -->
+    <button id="back-to-menu" onclick="location.href='index.html'">← Back to Menu</button>
 </div>
 
 <script>
@@ -76,6 +205,7 @@ let correct = 0;
 let total = 0;
 let mode = 'batch';
 let cardDelay = 800;
+let deckDisplayMode = 'accumulate'; // 'replace' or 'accumulate'
 
 function createFullDeck() {
     fullDeck = [];
@@ -148,7 +278,14 @@ function nextCardInDeck() {
     }
     
     const card = fullDeck.pop();
-    shownCards.push(card);
+    
+    if (deckDisplayMode === 'replace') {
+        // Only show current card (delete previous)
+        shownCards = [card];
+    } else {
+        // Accumulate all shown cards
+        shownCards.push(card);
+    }
     
     document.getElementById('cards-display').innerHTML = shownCards.map(getCardImageHTML).join('');
     
@@ -170,7 +307,6 @@ function checkGuess() {
     }
     updateAccuracy();
     
-    // Reveal omitted card in Deck Mode
     if (mode === 'deck' && omittedCard) {
         document.getElementById('omitted-reveal').innerHTML = 
             `<p>The omitted card was:</p>` + getCardImageHTML(omittedCard) +
@@ -179,16 +315,38 @@ function checkGuess() {
         document.getElementById('omitted-reveal').innerHTML = '';
     }
     
-    // Hide guess section after a delay so player can see reveal
     setTimeout(() => {
         document.getElementById('guess-section').style.display = 'none';
     }, 4000);
 }
 
-// Speed slider
+// Speed slider (live adjustment)
 document.getElementById('speed-slider').oninput = function() {
     cardDelay = parseInt(this.value);
     document.getElementById('speed-value').innerText = `${cardDelay} ms`;
+};
+
+// Settings menu
+document.getElementById('settings-btn').onclick = () => {
+    document.getElementById('settings-menu').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('default-speed').value = cardDelay;
+    document.getElementById('default-speed-value').innerText = `${cardDelay} ms`;
+    document.getElementById('deck-display-mode').value = deckDisplayMode;
+};
+
+document.getElementById('apply-settings-btn').onclick = () => {
+    cardDelay = parseInt(document.getElementById('default-speed').value);
+    deckDisplayMode = document.getElementById('deck-display-mode').value;
+    document.getElementById('speed-slider').value = cardDelay;
+    document.getElementById('speed-value').innerText = `${cardDelay} ms`;
+    
+    document.getElementById('settings-menu').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+};
+
+document.getElementById('default-speed').oninput = function() {
+    document.getElementById('default-speed-value').innerText = `${this.value} ms`;
 };
 
 // Mode switch
