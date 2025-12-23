@@ -48,11 +48,6 @@
             min-width: 100px;
         }
         button:hover { background: #d4af37; }
-        button:disabled {
-            background: #666;
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
         #settings-btn {
             position: fixed;
             top: 10px;
@@ -119,6 +114,7 @@
         #back-to-menu:hover { background: #aaa; }
         #feedback { min-height: 30px; font-size: 18px; }
         input#bet-input { width: 80px; padding: 10px; font-size: 18px; }
+        .hand-label { font-size: 18px; margin-top: 10px; }
         #count-accuracy { font-size: 16px; }
         @media (max-width: 480px) {
             .card-img { max-height: 100px; }
@@ -133,6 +129,13 @@
 <div id="settings-menu">
     <h2>Game Settings</h2>
     <div class="settings-grid">
+        <div class="setting-item">
+            <label>Number of Simultaneous Hands:</label><br>
+            <select id="num-hands">
+                <option value="1" selected>1 Hand</option>
+                <option value="2">2 Hands</option>
+            </select>
+        </div>
         <div class="setting-item">
             <label>Counting Trainer:</label><br>
             <select id="counting-on">
@@ -197,27 +200,29 @@
         <p id="play-accuracy">Correct plays: 0/0 (0%)</p>
         <p id="bet-suggestion">Suggested bet: $25 (1 unit)</p>
         <p>
-            Bet: $<input type="number" id="bet-input" value="25" min="5" step="5">
-            <button id="deal-button">Deal Hand</button>
+            Bet per hand: $<input type="number" id="bet-input" value="25" min="5" step="5">
+            <button id="deal-button">Deal Hand(s)</button>
         </p>
     </div>
     <div class="section">
         <h2>Dealer: <span id="dealer-total">?</span></h2>
         <div id="dealer-cards" class="cards"></div>
     </div>
-    <div class="section">
-        <h2>Your Hand: <span id="player-total">?</span></h2>
-        <div id="player-cards" class="cards"></div>
-    </div>
+
+    <div id="player-hands-container"></div>
+
     <div id="insurance-actions" class="section" style="display:none;">
         <p style="color:orange; font-size:1.2em;">Dealer shows Ace – Insurance?</p>
-        <button id="insurance-btn">Yes</button>
-        <button id="no-insurance-btn">No (Correct)</button>
+        <button id="insurance-yes">Yes</button>
+        <button id="insurance-no">No</button>
     </div>
+
     <div id="actions" class="section" style="display:none;"></div>
+
     <div class="section">
         <p id="feedback">Ready — press Deal</p>
     </div>
+
     <div id="end-round" style="display:none;" class="section">
         <h2>End of Round - Running Count Guess</h2>
         <p>Count accuracy: <span id="count-accuracy">0/0 (0%)</span></p>
@@ -225,54 +230,38 @@
         <button id="check-count-btn">Submit Guess</button>
         <p id="count-feedback"></p>
     </div>
-    <div class="section">
-        <p id="result"></p>
-    </div>
+
     <button id="back-to-menu" onclick="location.href='index.html'">← Back to Menu</button>
 </div>
 
 <script>
 // Global State
-let deck = [], playerHand = [], dealerHand = [], seenCards = [];
-let bankroll = 5000, baseUnit = 25, currentBet = 25;
-let gamePhase = 'betting';
+let deck = [];
+let dealerHand = [];
+let playerHands = []; // Array of hands
+let currentHandIndex = 0;
+let seenCards = [];
+let bankroll = 5000, baseUnit = 25, betPerHand = 25;
+let gamePhase = 'betting'; // betting, insurance, playing, dealer, endround
 let totalDecisions = 0, correctDecisions = 0, totalCountGuesses = 0, correctCountGuesses = 0;
+
 // Settings
 let numDecks = 6, dealerHitsSoft17 = true, surrenderEnabled = true, bjPayout = 1.5;
 let countingEnabled = true, guessCountEnabled = true;
+let numSimultaneousHands = 1;
 
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
-// Accurate Illustrious 18 + Fab 4 for multi-deck Hi-Lo (standard values from Schlesinger/Wizard of Odds)
+// Illustrious 18 + Fab 4 indices (same as before)
 const deviations = {
-    insurance: 3.0, // Take insurance at TC >= +3
-    '16vs10': 0,    // Stand 16 vs 10 at TC >= 0
-    '15vs10': 4,    // Stand 15 vs 10 at TC >= +4
-    '10vs10': 4,    // Double 10 vs 10 at TC >= +4
-    '10vsA': 3,     // Double 10 vs A at TC >= +3
-    '12vs3': 2,     // Stand 12 vs 3 at TC >= +2
-    '12vs2': 3,     // Stand 12 vs 2 at TC >= +3
-    '11vsA': 1,     // Double 11 vs A at TC >= +1
-    '9vs2': 1,      // Double 9 vs 2 at TC >= +1
-    '9vs7': 3,      // Double 9 vs 7 at TC >= +3
-    '8vs6': 2,      // Double 8 vs 6 at TC >= +2
-    '13vs2': -1,    // Stand 13 vs 2 at TC >= -1
-    '12vs4': 0,     // Stand 12 vs 4 at TC >= 0
-    '12vs5': -2,    // Stand 12 vs 5 at TC >= -2
-    '12vs6': -1,    // Stand 12 vs 6 at TC >= -1
-    '8vs5': 4,      // Double 8 vs 5 at TC >= +4 (rarely listed but part of some I18)
-    // Pairs
-    '1010vs5': 5,   // Split 10,10 vs 5 at TC >= +5
-    '1010vs6': 4     // Split 10,10 vs 6 at TC >= +4
+    insurance: 3.0,
+    '16vs10': 0, '15vs10': 4, '10vs10': 4, '10vsA': 3,
+    '12vs3': 2, '12vs2': 3, '11vsA': 1, '9vs2': 1, '9vs7': 3, '8vs6': 2,
+    '13vs2': -1, '12vs4': 0, '12vs5': -2, '12vs6': -1,
+    '1010vs5': 5, '1010vs6': 4
 };
-
-const fab4Surrender = {
-    '15vs9': 3,     // Surrender 15 vs 9 at TC >= +3
-    '15vs10': 0,    // Surrender 15 vs 10 at TC >= 0
-    '15vsA': -1,    // Surrender 15 vs A at TC >= -1 (H17 specific adjustment)
-    '14vs10': 3     // Surrender 14 vs 10 at TC >= +3
-};
+const fab4Surrender = { '15vs9': 3, '15vs10': 0, '15vsA': -1, '14vs10': 3 };
 
 function createDeck() {
     deck = [];
@@ -320,6 +309,9 @@ function isSoft(hand) {
     });
     return aces > 0 && total - 10 <= 21;
 }
+function isPair(hand) {
+    return hand.length === 2 && hand[0].slice(0,-1) === hand[1].slice(0,-1);
+}
 function getHiLoRC() {
     return seenCards.reduce((sum, c) => {
         const r = c.slice(0, -1);
@@ -346,85 +338,102 @@ function getUpcardValue() {
     if (up === 'A') return 'A';
     return (['J','Q','K'].includes(up)) ? 10 : parseInt(up);
 }
-function getCorrectActions() {
-    const actions = new Set();
-    const total = handTotal(playerHand);
+function getCorrectAction(hand) {
+    const total = handTotal(hand);
     const tc = getTrueCount();
     const up = getUpcardValue();
-    const isPair = playerHand.length === 2 && playerHand[0].slice(0,-1) === playerHand[1].slice(0,-1);
-    const pairRank = isPair ? cardValue(playerHand[0]) : null;
+    const pairRank = isPair(hand) ? cardValue(hand[0]) : null;
 
-    // Insurance
-    if (up === 'A' && tc >= deviations.insurance) actions.add('insurance');
+    let correct = new Set();
 
-    // Surrender (Fab 4 + standard late surrender if enabled)
-    if (surrenderEnabled && playerHand.length === 2) {
-        const key15 = `15vs${up}`;
-        const key14 = `14vs${up}`;
-        if ((fab4Surrender[key15] !== undefined && tc >= fab4Surrender[key15]) ||
-            (fab4Surrender[key14] !== undefined && tc >= fab4Surrender[key14])) {
-            actions.add('surrender');
+    if (countingEnabled) {
+        // Insurance deviation
+        if (up === 'A' && tc >= deviations.insurance) correct.add('insurance');
+
+        // Surrender deviations
+        if (surrenderEnabled && hand.length === 2) {
+            const key15 = `15vs${up}`;
+            const key14 = `14vs${up}`;
+            if ((fab4Surrender[key15] !== undefined && tc >= fab4Surrender[key15]) ||
+                (fab4Surrender[key14] !== undefined && tc >= fab4Surrender[key14])) {
+                correct.add('surrender');
+            }
         }
-        // Add basic late surrender (16 vs 9-A, 15 vs 10-A, etc.) always if not overridden
-        if (total === 16 && [9,10,'A'].includes(up)) actions.add('surrender');
-        if (total === 15 && up === 10) actions.add('surrender');
+
+        // Illustrious 18
+        if (total === 16 && up === 10 && tc >= deviations['16vs10']) correct.add('stand');
+        if (total === 15 && up === 10 && tc >= deviations['15vs10']) correct.add('stand');
+        if (total === 10 && up === 10 && tc >= deviations['10vs10']) correct.add('double');
+        if (total === 10 && up === 'A' && tc >= deviations['10vsA']) correct.add('double');
+        if (total === 12 && up === 3 && tc >= deviations['12vs3']) correct.add('stand');
+        if (total === 12 && up === 2 && tc >= deviations['12vs2']) correct.add('stand');
+        if (total === 11 && up === 'A' && tc >= deviations['11vsA']) correct.add('double');
+        if (total === 9 && up === 2 && tc >= deviations['9vs2']) correct.add('double');
+        if (total === 9 && up === 7 && tc >= deviations['9vs7']) correct.add('double');
+        if (total === 8 && up === 6 && tc >= deviations['8vs6']) correct.add('double');
+        if (total === 13 && up === 2 && tc >= deviations['13vs2']) correct.add('stand');
+        if (total === 12 && up === 4 && tc >= deviations['12vs4']) correct.add('stand');
+        if (total === 12 && up === 5 && tc >= deviations['12vs5']) correct.add('stand');
+        if (total === 12 && up === 6 && tc >= deviations['12vs6']) correct.add('stand');
+
+        // Pair deviations
+        if (pairRank === 10) {
+            if (up === 5 && tc >= deviations['1010vs5']) correct.add('split');
+            if (up === 6 && tc >= deviations['1010vs6']) correct.add('split');
+        }
     }
 
-    // Illustrious 18 deviations
-    if (total === 16 && up === 10 && tc >= deviations['16vs10']) actions.add('stand');
-    if (total === 15 && up === 10 && tc >= deviations['15vs10']) actions.add('stand');
-    if (total === 10 && up === 10 && tc >= deviations['10vs10']) actions.add('double');
-    if (total === 10 && up === 'A' && tc >= deviations['10vsA']) actions.add('double');
-    if (total === 12 && up === 3 && tc >= deviations['12vs3']) actions.add('stand');
-    if (total === 12 && up === 2 && tc >= deviations['12vs2']) actions.add('stand');
-    if (total === 11 && up === 'A' && tc >= deviations['11vsA']) actions.add('double');
-    if (total === 9 && up === 2 && tc >= deviations['9vs2']) actions.add('double');
-    if (total === 9 && up === 7 && tc >= deviations['9vs7']) actions.add('double');
-    if (total === 8 && up === 6 && tc >= deviations['8vs6']) actions.add('double');
-    if (total === 13 && up === 2 && tc >= deviations['13vs2']) actions.add('stand');
-    if (total === 12 && up === 4 && tc >= deviations['12vs4']) actions.add('stand');
-    if (total === 12 && up === 5 && tc >= deviations['12vs5']) actions.add('stand');
-    if (total === 12 && up === 6 && tc >= deviations['12vs6']) actions.add('stand');
-
-    // Pairs
-    if (isPair) {
-        if (pairRank === 10 && up === 5 && tc >= deviations['1010vs5']) actions.add('split');
-        if (pairRank === 10 && up === 6 && tc >= deviations['1010vs6']) actions.add('split');
-        // Other pairs basic
-        if (pairRank === 11 || pairRank === 8) actions.add('split');
+    // Basic strategy fallback (always applied)
+    if (isPair(hand)) {
+        if (pairRank === 11 || pairRank === 8) correct.add('split');
+        if (pairRank === 9 && up <= 9 && up !== 7) correct.add('split');
+        if (pairRank === 7 && up <= 7) correct.add('split');
+        if (pairRank === 6 && up <= 6) correct.add('split');
+        if (pairRank === 4 && (up === 5 || up === 6)) correct.add('split');
+        if (pairRank === 3 || pairRank === 2 && up <= 7) correct.add('split');
     }
-
-    // Basic strategy doubles/splits/stands/hits (fallback)
-    if (playerHand.length === 2) {
-        if (total === 11) actions.add('double');
-        if (total === 10 && up <= 9) actions.add('double');
-        if (total === 9 && up >= 3 && up <= 6) actions.add('double');
+    if (surrenderEnabled && hand.length === 2) {
+        if (total === 16 && [9,10,'A'].includes(up)) correct.add('surrender');
+        if (total === 15 && up === 10) correct.add('surrender');
     }
-    if (total >= 17) actions.add('stand');
-    if (total <= 11) actions.add('hit');
-    if (total >= 12 && total <= 16) {
-        if (up <= 6) actions.add('stand');
-        else actions.add('hit');
+    if (hand.length === 2) {
+        if (total === 11) correct.add('double');
+        if (total === 10 && up <= 9) correct.add('double');
+        if (total === 9 && up >= 3 && up <= 6) correct.add('double');
     }
+    if (total >= 17) correct.add('stand');
+    if (total <= 11) correct.add('hit');
+    if (total >= 12 && total <= 16 && up <= 6) correct.add('stand');
 
-    return actions;
+    return correct;
+}
+function updatePlayerHandsDisplay() {
+    const container = document.getElementById('player-hands-container');
+    container.innerHTML = '';
+    playerHands.forEach((hand, i) => {
+        const div = document.createElement('div');
+        div.className = 'section';
+        div.innerHTML = `
+            <h2 class="hand-label">${numSimultaneousHands > 1 ? 'Hand ' + (i+1) + (i === currentHandIndex ? ' (Active)' : '') : 'Your Hand'}: <span class="hand-total">${handTotal(hand)}</span></h2>
+            <div class="cards hand-cards">${hand.map(getCardImageHTML).join('')}</div>
+        `;
+        container.appendChild(div);
+    });
 }
 function updateActionButtons() {
     const container = document.getElementById('actions');
     container.innerHTML = '';
-    const possible = ['hit', 'stand', 'double', 'split', 'surrender', 'insurance'];
-    const correct = getCorrectActions();
+    const hand = playerHands[currentHandIndex];
 
-    possible.forEach(act => {
-        if (act === 'insurance' && gamePhase !== 'insurance') return;
-        if ((act === 'double' || act === 'split' || act === 'surrender') && playerHand.length > 2) return;
-        if (act === 'split' && !(playerHand.length === 2 && playerHand[0].slice(0,-1) === playerHand[1].slice(0,-1))) return;
-        if (act === 'surrender' && !surrenderEnabled) return;
+    const actions = ['hit', 'stand', 'double', 'split', 'surrender'];
+    actions.forEach(act => {
+        if (act === 'double' && hand.length > 2) return;
+        if (act === 'split' && !isPair(hand)) return;
+        if (act === 'surrender' && (!surrenderEnabled || hand.length > 2)) return;
 
         const btn = document.createElement('button');
-        btn.textContent = act === 'insurance' ? 'Take Insurance' : act.charAt(0).toUpperCase() + act.slice(1);
+        btn.textContent = act.charAt(0).toUpperCase() + act.slice(1);
         btn.onclick = () => playerMove(act);
-        if (!correct.has(act)) btn.disabled = true;
         container.appendChild(btn);
     });
 }
@@ -448,66 +457,83 @@ function updateDisplay() {
         : dealerHand.map(getCardImageHTML).join('');
     document.getElementById('dealer-total').innerText = hideDealer ? '?' : handTotal(dealerHand);
 
-    document.getElementById('player-cards').innerHTML = playerHand.map(getCardImageHTML).join('');
-    document.getElementById('player-total').innerText = handTotal(playerHand);
+    updatePlayerHandsDisplay();
 
     document.getElementById('actions').style.display = gamePhase === 'playing' ? 'block' : 'none';
     document.getElementById('insurance-actions').style.display = gamePhase === 'insurance' ? 'block' : 'none';
     document.getElementById('deal-button').style.display = gamePhase === 'betting' ? 'inline-block' : 'none';
-    document.getElementById('end-round').style.display = (gamePhase === 'endround') ? 'block' : 'none';
+    document.getElementById('end-round').style.display = gamePhase === 'endround' ? 'block' : 'none';
 
     if (gamePhase === 'playing') updateActionButtons();
 }
 function startHand() {
-    currentBet = parseInt(document.getElementById('bet-input').value) || 25;
-    if (currentBet > bankroll || currentBet < 5) { alert("Invalid bet!"); return; }
+    betPerHand = parseInt(document.getElementById('bet-input').value) || 25;
+    if (betPerHand * numSimultaneousHands > bankroll) { alert("Insufficient funds!"); return; }
 
-    bankroll -= currentBet;
-    playerHand = []; dealerHand = [];
+    bankroll -= betPerHand * numSimultaneousHands;
+    playerHands = [];
+    for (let i = 0; i < numSimultaneousHands; i++) playerHands.push([]);
+    dealerHand = [];
+    currentHandIndex = 0;
     gamePhase = 'playing';
-    document.getElementById('result').innerText = '';
-    document.getElementById('feedback').innerText = 'Your move...';
 
-    dealCard(playerHand); dealCard(dealerHand); dealCard(playerHand); dealCard(dealerHand);
+    document.getElementById('feedback').innerText = 'Dealing...';
+
+    for (let i = 0; i < numSimultaneousHands; i++) {
+        dealCard(playerHands[i]);
+        dealCard(playerHands[i]);
+    }
+    dealCard(dealerHand);
+    dealCard(dealerHand);
 
     if (dealerHand[0].startsWith('A')) gamePhase = 'insurance';
 
     updateDisplay();
 }
 function playerMove(action) {
-    const correct = getCorrectActions();
+    const hand = playerHands[currentHandIndex];
+    const correct = getCorrectAction(hand);
     totalDecisions++;
     if (correct.has(action)) {
         correctDecisions++;
         document.getElementById('feedback').innerText = "✓ Correct!";
         document.getElementById('feedback').style.color = "lime";
     } else {
-        document.getElementById('feedback').innerText = `✗ Wrong! Correct: ${[...correct].map(a => a.toUpperCase()).join('/')}`;
+        document.getElementById('feedback').innerText = `✗ Wrong – correct was ${[...correct].map(a => a.toUpperCase()).join('/')}`;
         document.getElementById('feedback').style.color = "red";
     }
 
     if (action === 'hit') {
-        dealCard(playerHand);
-        if (handTotal(playerHand) > 21) dealerPlay();
+        dealCard(hand);
+        if (handTotal(hand) > 21) moveToNextHand();
     } else if (action === 'stand') {
-        dealerPlay();
+        moveToNextHand();
     } else if (action === 'double') {
-        bankroll -= currentBet;
-        currentBet *= 2;
-        dealCard(playerHand);
-        dealerPlay();
+        bankroll -= betPerHand;
+        dealCard(hand);
+        moveToNextHand();
     } else if (action === 'surrender') {
-        bankroll += Math.floor(currentBet / 2);
-        endHand("Surrendered – lost half bet");
+        bankroll += Math.floor(betPerHand / 2);
+        moveToNextHand();
     } else if (action === 'split') {
-        alert("Split not fully implemented (single hand trainer)");
-    } else if (action === 'insurance') {
-        bankroll -= currentBet / 2; // Insurance bet
-        gamePhase = 'playing';
+        bankroll -= betPerHand;
+        const card1 = hand.pop();
+        const newHand = [card1];
+        dealCard(hand);
+        dealCard(newHand);
+        playerHands.splice(currentHandIndex + 1, 0, newHand);
         updateDisplay();
     }
 
     updateDisplay();
+}
+function moveToNextHand() {
+    currentHandIndex++;
+    if (currentHandIndex >= playerHands.length) {
+        dealerPlay();
+    } else {
+        updateDisplay();
+    }
 }
 function dealerPlay() {
     gamePhase = 'dealer';
@@ -520,34 +546,44 @@ function dealerPlay() {
             updateDisplay();
             setTimeout(step, 800);
         } else {
-            evaluate();
+            evaluateAllHands();
         }
     };
     setTimeout(step, 800);
 }
-function evaluate() {
-    const pTotal = handTotal(playerHand);
+function evaluateAllHands() {
     const dTotal = handTotal(dealerHand);
-    let msg = '';
-    if (pTotal > 21) msg = "Bust – You lose";
-    else if (dTotal > 21) { bankroll += currentBet * 2; msg = "Dealer bust – Win!"; }
-    else if (pTotal > dTotal) { bankroll += currentBet * 2; msg = "Win!"; }
-    else if (pTotal === dTotal) { bankroll += currentBet; msg = "Push"; }
-    else msg = "Lose";
+    playerHands.forEach(hand => {
+        const pTotal = handTotal(hand);
+        if (pTotal > 21) return;
+        if (pTotal === 21 && hand.length === 2) {
+            bankroll += betPerHand * (2 + bjPayout);
+        } else if (dTotal > 21 || pTotal > dTotal) {
+            bankroll += betPerHand * 2;
+        } else if (pTotal === dTotal) {
+            bankroll += betPerHand;
+        }
+    });
 
     if (guessCountEnabled) {
         gamePhase = 'endround';
         document.getElementById('feedback').innerText = "Round over – Guess Running Count!";
     } else {
-        endHand(msg);
+        gamePhase = 'betting';
+        document.getElementById('feedback').innerText = "Round over — Deal next hand(s)";
     }
     updateDisplay();
 }
-function endHand(msg) {
-    gamePhase = 'betting';
-    document.getElementById('feedback').innerText = msg + " — Deal next hand";
+// Insurance
+document.getElementById('insurance-yes').onclick = () => {
+    bankroll -= betPerHand * numSimultaneousHands / 2;
+    gamePhase = 'playing';
     updateDisplay();
-}
+};
+document.getElementById('insurance-no').onclick = () => {
+    gamePhase = 'playing';
+    updateDisplay();
+};
 /** Count Guess **/
 document.getElementById('check-count-btn').onclick = () => {
     const actual = getHiLoRC();
@@ -565,7 +601,9 @@ document.getElementById('check-count-btn').onclick = () => {
     document.getElementById('count-accuracy').innerText = `${correctCountGuesses}/${totalCountGuesses} (${pct}%)`;
 
     setTimeout(() => {
-        endHand("Next hand ready");
+        gamePhase = 'betting';
+        document.getElementById('feedback').innerText = "Next hand ready";
+        updateDisplay();
     }, 2500);
 };
 /** Settings **/
@@ -576,6 +614,7 @@ function applySettings() {
     bjPayout = parseFloat(document.getElementById('bj-payout').value);
     countingEnabled = document.getElementById('counting-on').value === 'true';
     guessCountEnabled = document.getElementById('guess-count-on').value === 'true';
+    numSimultaneousHands = parseInt(document.getElementById('num-hands').value);
     bankroll = parseInt(document.getElementById('starting-bankroll').value) || 5000;
     document.getElementById('settings-menu').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
@@ -588,8 +627,6 @@ document.getElementById('settings-btn').onclick = () => {
 };
 document.getElementById('apply-settings-btn').onclick = applySettings;
 document.getElementById('deal-button').onclick = startHand;
-document.getElementById('insurance-btn').onclick = () => playerMove('insurance');
-document.getElementById('no-insurance-btn').onclick = () => { gamePhase = 'playing'; updateDisplay(); };
 // Init
 createDeck();
 updateDisplay();
