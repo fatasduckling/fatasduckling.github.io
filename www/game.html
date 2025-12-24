@@ -78,6 +78,7 @@
             background: linear-gradient(to bottom, #ffaa00, #cc7700) !important;
             box-shadow: 0 6px 12px rgba(255,170,0,0.5);
         }
+        /* Perfect Circle Settings Button - Fixed */
         #settings-btn {
             position: fixed;
             top: 12px;
@@ -86,8 +87,6 @@
             background: linear-gradient(to bottom, #e6b800, #c3992a);
             color: white;
             font-size: 28px;
-            line-height: 56px;
-            text-align: center;
             border-radius: 50%;
             width: 56px;
             height: 56px;
@@ -97,10 +96,43 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0;
+            border: none;
+            line-height: 1;
         }
         #settings-btn:hover {
             background: linear-gradient(to bottom, #ffcc00, #d4af37);
             transform: scale(1.1);
+        }
+        /* Settings Menu Scrollable on Mobile */
+        #settings-menu {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 30px;
+            border-radius: 20px;
+            z-index: 100;
+            border: 4px solid gold;
+            width: 90%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        #settings-menu::-webkit-scrollbar {
+            width: 8px;
+        }
+        #settings-menu::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        #settings-menu::-webkit-scrollbar-thumb {
+            background: gold;
+            border-radius: 10px;
         }
         .settings-grid {
             display: grid;
@@ -128,21 +160,6 @@
             border: none;
             background: #333;
             color: white;
-        }
-        #settings-menu {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            padding: 30px;
-            border-radius: 20px;
-            z-index: 100;
-            border: 4px solid gold;
-            width: 90%;
-            max-width: 520px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
         #overlay {
             display: none;
@@ -185,12 +202,18 @@
             .card-img { max-height: 110px; }
             button { padding: 12px 18px; font-size: 17px; min-width: 90px; }
             h1 { font-size: 24px; }
-            #settings-btn { width: 50px; height: 50px; line-height: 50px; font-size: 24px; }
+            #settings-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
+<!-- Perfect Circle Settings Button -->
 <button id="settings-btn" title="Settings">⚙️</button>
+
 <div id="overlay"></div>
 <div id="settings-menu">
     <h2>Game Settings</h2>
@@ -260,9 +283,10 @@
     </div>
     <button id="apply-settings-btn">Apply & Close</button>
 </div>
+
 <div id="game">
     <h1>Hi-Lo Counting Trainer</h1>
-  
+ 
     <div class="section stats">
         <div>Bankroll: $<span id="bankroll">5000</span></div>
         <div>Decks Left: <span id="decks-left">1.0</span></div>
@@ -301,24 +325,22 @@
     </div>
     <button id="back-to-menu" onclick="location.href='index.html'">← Back to Menu</button>
 </div>
+
 <script>
-// Global State
+// (All JavaScript remains unchanged from previous version)
 let deck = [];
 let dealerHand = [];
-let playerHands = []; // Array of {cards: [], bet: number}
+let playerHands = [];
 let currentHandIndex = 0;
 let seenCards = [];
 let bankroll = 5000, baseUnit = 25, betPerHand = 25;
 let gamePhase = 'betting';
 let totalDecisions = 0, correctDecisions = 0, totalCountGuesses = 0, correctCountGuesses = 0;
-// Settings
 let numDecks = 1, dealerHitsSoft17 = true, surrenderEnabled = true, bjPayout = 1.5;
 let countingEnabled = true, guessCountEnabled = true, doubleAfterSplit = true;
 let numSimultaneousHands = 1;
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-
-// Strict Illustrious 18 + Fab 4 indices (multi-deck H17 base, widely accepted values)
 const illustrious18 = {
     insurance: 3,
     '16vs10': 0,
@@ -339,14 +361,12 @@ const illustrious18 = {
     '1010vs6': 4,
     '16vs9': 5
 };
-
 const fab4 = {
     '15vs9': 3,
     '15vs10': 0,
     '15vsA': 2,
     '14vs10': 4
 };
-
 function createDeck() {
     deck = [];
     for (let d = 0; d < numDecks; d++) {
@@ -425,8 +445,6 @@ function getCardImageHTML(card) {
     const fileName = `${rankMap[r] || r}_of_${suitMap[s]}.svg`.toLowerCase();
     return `<img src="cards/${fileName}" class="card-img" alt="${card}">`;
 }
-
-// Returns {basic: Set, deviation: Set} of correct actions
 function getCorrectActions(handObj) {
     const hand = handObj.cards;
     const total = handTotal(handObj);
@@ -435,14 +453,10 @@ function getCorrectActions(handObj) {
     const isPair = hand.length === 2 && rankValue(hand[0]) === rankValue(hand[1]);
     const rank = isPair ? rankValue(hand[0]) : null;
     const isSoft = isSoftHand(handObj);
-
     const basicCorrect = new Set();
     const deviationCorrect = new Set();
-
-    // === Illustrious 18 Deviations ===
     if (countingEnabled) {
         if (up === 'A' && tc >= illustrious18.insurance) deviationCorrect.add('insurance');
-
         if (total === 16 && up === 10 && tc >= illustrious18['16vs10']) deviationCorrect.add('stand');
         if (total === 15 && up === 10 && tc >= illustrious18['15vs10']) deviationCorrect.add('stand');
         if (total === 11 && up === 'A' && tc >= illustrious18['11vsA']) deviationCorrect.add('double');
@@ -463,38 +477,27 @@ function getCorrectActions(handObj) {
             if (up === 6 && tc >= illustrious18['1010vs6']) deviationCorrect.add('stand');
         }
     }
-
-    // === Fab 4 Surrender Deviations ===
     if (countingEnabled && surrenderEnabled && hand.length === 2) {
         if (total === 15 && up === 9 && tc >= fab4['15vs9']) deviationCorrect.add('surrender');
         if (total === 15 && up === 10 && tc >= fab4['15vs10']) deviationCorrect.add('surrender');
         if (total === 15 && up === 'A' && tc >= fab4['15vsA']) deviationCorrect.add('surrender');
         if (total === 14 && up === 10 && tc >= fab4['14vs10']) deviationCorrect.add('surrender');
     }
-
-    // === Basic Strategy (full standard for multi-deck H17) ===
     if (hand.length === 2) {
-        // Splits
         if (rank === 'A' || rank === '8') basicCorrect.add('split');
         if (rank === '9' && ![7].includes(up)) basicCorrect.add('split');
         if (rank === '7' && up <= 7) basicCorrect.add('split');
         if (rank === '6' && up <= 6) basicCorrect.add('split');
         if (rank === '4' && [5,6].includes(up) && doubleAfterSplit) basicCorrect.add('split');
         if ((rank === '3' || rank === '2') && up <= 7) basicCorrect.add('split');
-
-        // Basic Surrender
         if (surrenderEnabled) {
             if (total === 16 && up >= 9) basicCorrect.add('surrender');
             if (total === 15 && up === 10) basicCorrect.add('surrender');
         }
-
-        // Doubles
         if (total === 11) basicCorrect.add('double');
         if (total === 10 && up <= 9) basicCorrect.add('double');
         if (total === 9 && up >= 3 && up <= 6) basicCorrect.add('double');
     }
-
-    // Soft doubles/stands
     if (isSoft) {
         if (total >= 19) basicCorrect.add('stand');
         if (total === 18) {
@@ -505,16 +508,13 @@ function getCorrectActions(handObj) {
         if (total === 17 && up <= 6) basicCorrect.add('double');
         if (total <= 16) basicCorrect.add('hit');
     } else {
-        // Hard stands
         if (total >= 17) basicCorrect.add('stand');
         if (total <= 11) basicCorrect.add('hit');
         if (total >= 12 && total <= 16 && up <= 6) basicCorrect.add('stand');
         if (total >= 12 && total <= 16 && up >= 7) basicCorrect.add('hit');
     }
-
     return { basic: basicCorrect, deviation: deviationCorrect };
 }
-
 function updatePlayerHandsDisplay() {
     const container = document.getElementById('player-hands-container');
     container.innerHTML = '';
@@ -529,27 +529,22 @@ function updatePlayerHandsDisplay() {
         container.appendChild(div);
     });
 }
-
 function updateActionButtons() {
     const container = document.getElementById('actions');
     container.innerHTML = '';
     const handObj = playerHands[currentHandIndex];
     const { basic, deviation } = getCorrectActions(handObj);
-
     const allCorrect = new Set([...basic, ...deviation]);
     const actions = ['hit', 'stand', 'double', 'split', 'surrender'];
-
     actions.forEach(act => {
         let show = true;
         if (act === 'double') show = handObj.cards.length === 2 || (doubleAfterSplit && handObj.cards.length > 2);
         if (act === 'split') show = isSplittable(handObj);
         if (act === 'surrender') show = surrenderEnabled && handObj.cards.length === 2;
-
         if (show) {
             const btn = document.createElement('button');
             btn.textContent = act.charAt(0).toUpperCase() + act.slice(1);
             btn.onclick = () => playerMove(act);
-
             if (allCorrect.has(act)) {
                 btn.classList.add('correct');
                 if (deviation.has(act)) btn.classList.add('deviation');
@@ -558,12 +553,10 @@ function updateActionButtons() {
         }
     });
 }
-
 function playerMove(action) {
     const handObj = playerHands[currentHandIndex];
     const { basic, deviation } = getCorrectActions(handObj);
     const allCorrect = new Set([...basic, ...deviation]);
-
     totalDecisions++;
     let msg = '';
     if (allCorrect.has(action)) {
@@ -585,8 +578,6 @@ function playerMove(action) {
         document.getElementById('feedback').style.color = 'red';
     }
     document.getElementById('feedback').innerText = msg;
-
-    // Execute move...
     if (action === 'hit') {
         dealCard(handObj.cards);
         if (handTotal(handObj) > 21) moveToNextHand();
@@ -608,12 +599,10 @@ function playerMove(action) {
         dealCard(newHand.cards);
         playerHands.splice(currentHandIndex + 1, 0, newHand);
         updateDisplay();
-        return; // Re-evaluate actions for current hand
+        return;
     }
     updateDisplay();
 }
-
-// Rest of functions unchanged (moveToNextHand, dealerPlay, evaluateAllHands, etc.)
 function moveToNextHand() {
     currentHandIndex++;
     if (currentHandIndex >= playerHands.length) {
@@ -700,9 +689,8 @@ function startHand() {
     if (dealerHand[0]?.startsWith('A')) gamePhase = 'insurance';
     updateDisplay();
 }
-// Insurance handling
 document.getElementById('insurance-yes').onclick = () => {
-    const { deviation } = getCorrectActions({cards: playerHands[0].cards}); // Any hand is fine
+    const { deviation } = getCorrectActions({cards: playerHands[0].cards});
     totalDecisions++;
     if (deviation.has('insurance')) {
         correctDecisions++;
@@ -730,7 +718,6 @@ document.getElementById('insurance-no').onclick = () => {
     gamePhase = 'playing';
     updateDisplay();
 };
-// Count Guess
 document.getElementById('check-count-btn').onclick = () => {
     const actual = getHiLoRC();
     const guess = parseInt(document.getElementById('count-guess').value) || 0;
@@ -751,7 +738,6 @@ document.getElementById('check-count-btn').onclick = () => {
         updateDisplay();
     }, 2500);
 };
-// Settings
 function applySettings() {
     numDecks = parseInt(document.getElementById('num-decks').value);
     dealerHitsSoft17 = document.getElementById('soft17').value === 'true';
@@ -773,7 +759,6 @@ document.getElementById('settings-btn').onclick = () => {
 };
 document.getElementById('apply-settings-btn').onclick = applySettings;
 document.getElementById('deal-button').onclick = startHand;
-// Init
 createDeck();
 updateDisplay();
 </script>
