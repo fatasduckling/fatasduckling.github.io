@@ -70,6 +70,15 @@
             transition: all 0.2s;
         }
         button:hover { opacity: 0.9; transform: translateY(-2px); }
+        /* All legal/playable actions are always golden */
+        button.legal {
+            background: linear-gradient(to bottom, #e6b800, #c3992a) !important;
+            box-shadow: 0 6px 12px rgba(195,153,42,0.5);
+        }
+        button.legal:hover {
+            background: linear-gradient(to bottom, #ffcc00, #d4af37) !important;
+        }
+        /* Highlight correct move (green/orange) - controlled by setting */
         button.correct {
             background: linear-gradient(to bottom, #00ff00, #009900) !important;
             box-shadow: 0 6px 12px rgba(0,255,0,0.5);
@@ -78,7 +87,6 @@
             background: linear-gradient(to bottom, #ffaa00, #cc7700) !important;
             box-shadow: 0 6px 12px rgba(255,170,0,0.5);
         }
-
         /* PERFECT CIRCLE SETTINGS BUTTON */
         #settings-btn {
             position: fixed;
@@ -88,20 +96,15 @@
             background: linear-gradient(to bottom, #e6b800, #c3992a);
             color: white;
             font-size: 28px;
-            
-            /* Circle Logic */
             width: 60px;
             height: 60px;
             border-radius: 50%;
             padding: 0;
             margin: 0;
-            min-width: 0; /* Reset global button min-width */
-            
-            /* Centering the Icon */
+            min-width: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            
             box-shadow: 0 6px 15px rgba(0,0,0,0.6);
             cursor: pointer;
             transition: all 0.2s;
@@ -109,9 +112,8 @@
         }
         #settings-btn:hover {
             background: linear-gradient(to bottom, #ffcc00, #d4af37);
-            transform: scale(1.1) rotate(45deg);
+            transform: scale(1.1);
         }
-
         #settings-menu {
             display: none;
             position: fixed;
@@ -205,9 +207,7 @@
     </style>
 </head>
 <body>
-
 <button id="settings-btn" title="Settings">⚙️</button>
-
 <div id="overlay"></div>
 <div id="settings-menu">
     <h2>Game Settings</h2>
@@ -238,6 +238,13 @@
             <select id="guess-count-on">
                 <option value="true" selected>Every Round</option>
                 <option value="false">Disabled</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <label>Highlight Correct Moves:</label>
+            <select id="highlight-correct">
+                <option value="false" selected>Off</option>
+                <option value="true">On</option>
             </select>
         </div>
         <div class="setting-item">
@@ -277,10 +284,8 @@
     </div>
     <button id="apply-settings-btn">Apply & Close</button>
 </div>
-
 <div id="game">
     <h1>Hi-Lo Counting Trainer</h1>
- 
     <div class="section stats">
         <div>Bankroll: $<span id="bankroll">5000</span></div>
         <div>Decks Left: <span id="decks-left">1.0</span></div>
@@ -319,7 +324,6 @@
     </div>
     <button id="back-to-menu" onclick="location.href='index.html'">← Back to Menu</button>
 </div>
-
 <script>
 let deck = [];
 let dealerHand = [];
@@ -332,12 +336,11 @@ let totalDecisions = 0, correctDecisions = 0, totalCountGuesses = 0, correctCoun
 let numDecks = 1, dealerHitsSoft17 = true, surrenderEnabled = true, bjPayout = 1.5;
 let countingEnabled = true, guessCountEnabled = true, doubleAfterSplit = true;
 let numSimultaneousHands = 1;
+let highlightCorrectMoves = false; // Default OFF as requested
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-
 const illustrious18 = { insurance: 3, '16vs10': 0, '15vs10': 4, '11vsA': 1, '10vs10': 4, '10vsA': 3, '12vs3': 2, '12vs2': 3, '9vs2': 1, '9vs7': 3, '8vs6': 2, '13vs2': -1, '12vs4': 0, '12vs5': -1, '12vs6': -2, '1010vs5': 5, '1010vs6': 4, '16vs9': 5 };
 const fab4 = { '15vs9': 3, '15vs10': 0, '15vsA': 2, '14vs10': 4 };
-
 function createDeck() {
     deck = [];
     for (let d = 0; d < numDecks; d++) {
@@ -516,9 +519,12 @@ function updateActionButtons() {
             const btn = document.createElement('button');
             btn.textContent = act.charAt(0).toUpperCase() + act.slice(1);
             btn.onclick = () => playerMove(act);
-            if (allCorrect.has(act)) {
-                btn.classList.add('correct');
-                if (deviation.has(act)) btn.classList.add('deviation');
+            btn.classList.add('legal'); // All playable actions are golden
+            if (highlightCorrectMoves) {
+                if (allCorrect.has(act)) {
+                    btn.classList.add('correct');
+                    if (deviation.has(act)) btn.classList.add('deviation');
+                }
             }
             container.appendChild(btn);
         }
@@ -707,6 +713,7 @@ function applySettings() {
     guessCountEnabled = document.getElementById('guess-count-on').value === 'true';
     doubleAfterSplit = document.getElementById('das').value === 'true';
     numSimultaneousHands = parseInt(document.getElementById('num-hands').value);
+    highlightCorrectMoves = document.getElementById('highlight-correct').value === 'true';
     bankroll = parseInt(document.getElementById('starting-bankroll').value) || 5000;
     document.getElementById('settings-menu').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
