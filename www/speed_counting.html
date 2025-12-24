@@ -83,7 +83,7 @@
             border: 2px solid gold;
         }
 
-        /* FIXED SETTINGS BUTTON: Perfect Circle */
+        /* --- THE FIXED CIRCULAR BUTTON --- */
         #settings-btn {
             position: fixed;
             top: 15px;
@@ -91,20 +91,28 @@
             z-index: 200;
             background: linear-gradient(to bottom, #e6b800, #c3992a);
             color: white;
-            font-size: 28px;
-            width: 65px;      /* Equal width */
-            height: 65px;     /* Equal height */
-            border-radius: 50%; /* Perfect circle */
-            display: flex;    /* Flex for centering */
+            
+            /* Force Aspect Ratio */
+            width: 60px;
+            height: 60px;
+            min-width: 60px; /* Prevents shrinking */
+            min-height: 60px; /* Prevents stretching */
+            aspect-ratio: 1 / 1;
+            
+            border-radius: 50% !important; /* Forces circle */
+            border: none;
+            padding: 0; /* Critical to remove oval shape */
+            margin: 0;
+            
+            /* Center the icon */
+            display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0;
-            margin: 0;
-            border: none;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+            font-size: 28px;
+            
             cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
             transition: all 0.2s;
-            line-height: 1;
         }
         #settings-btn:hover {
             background: linear-gradient(to bottom, #ffcc00, #d4af37);
@@ -208,8 +216,10 @@
                 min-width: 80%;
             }
             #settings-btn {
-                width: 60px;
-                height: 60px;
+                width: 50px;
+                height: 50px;
+                min-width: 50px;
+                min-height: 50px;
                 font-size: 24px;
             }
             #feedback { font-size: 28px; }
@@ -271,6 +281,7 @@
 </div>
 
 <script>
+// Logic remains identical as requested
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 let fullDeck = [];
@@ -411,7 +422,6 @@ function checkGuess() {
     }
 }
 
-// Settings logic
 document.getElementById('settings-btn').onclick = () => {
     document.getElementById('settings-menu').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
@@ -434,7 +444,6 @@ document.getElementById('default-speed').oninput = function() {
     document.getElementById('default-speed-value').innerText = `${this.value} ms`;
 };
 
-// Mode switching logic
 document.getElementById('mode-select').onchange = function() {
     mode = this.value;
     document.getElementById('batch-controls').style.display = mode === 'batch' ? 'block' : 'none';
