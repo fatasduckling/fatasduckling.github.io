@@ -82,7 +82,7 @@
             display: block;
             border: 2px solid gold;
         }
-        /* Settings Button - Oval is fine as per user */
+        /* Perfect Circle Settings Button - Final Fix */
         #settings-btn {
             position: fixed;
             top: 15px;
@@ -102,7 +102,12 @@
             justify-content: center;
             padding: 0;
             border: none;
-            line-height: 1;
+            overflow: hidden;
+        }
+        #settings-btn svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
         }
         #settings-btn:hover {
             background: linear-gradient(to bottom, #ffcc00, #d4af37);
@@ -210,7 +215,10 @@
             #settings-btn {
                 width: 60px;
                 height: 60px;
-                font-size: 24px;
+            }
+            #settings-btn svg {
+                width: 34px;
+                height: 34px;
             }
             #feedback {
                 font-size: 28px;
@@ -219,7 +227,13 @@
     </style>
 </head>
 <body>
-<button id="settings-btn" title="Settings">⚙️</button>
+<!-- Perfect Circle Settings Button with SVG Gear Icon -->
+<button id="settings-btn" title="Settings">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19.14 12.94c.04-.3.06-.61.06-.92 0-.31-.02-.62-.06-.92l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.44h-3.84a.5.5 0 0 0-.5.44l-.36 2.54c-.59.24-1.12.56-1.62.94l-2.39-.96a.5.5 0 0 0-.59.22l-1.92 3.32c-.12.22-.07.47.12.61l2.03 1.58c-.04.3-.06.61-.06.92s.02.62.06.92L3.91 18.9a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.44.5.44h3.84c.26 0 .45-.2.5-.44l.36-2.54c.59-.24 1.12-.56 1.62-.94l2.39.96c.22.07.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/>
+    </svg>
+</button>
+
 <div id="overlay"></div>
 <div id="settings-menu">
     <h2>Speed Counting Settings</h2>
@@ -271,7 +285,7 @@ let total = 0;
 let mode = 'batch';
 let cardDelay = 800;
 let currentTimeout = null;
-let guessSubmitted = false; // NEW: Tracks if guess has already been made this round
+let guessSubmitted = false;
 
 function createFullDeck() {
     fullDeck = [];
@@ -326,7 +340,7 @@ function startBatch() {
     document.getElementById('guess-input').focus();
 
     window.expectedValue = runningCount;
-    resetRoundForGuess(); // Allow one guess
+    resetRoundForGuess();
 }
 
 function startDeckMode() {
@@ -353,7 +367,7 @@ function nextCardInDeck() {
         document.getElementById('guess-section').style.display = 'block';
         document.getElementById('guess-input').value = '';
         document.getElementById('guess-input').focus();
-        resetRoundForGuess(); // Allow one guess at the end
+        resetRoundForGuess();
         return;
     }
     const card = fullDeck.pop();
@@ -362,7 +376,7 @@ function nextCardInDeck() {
 }
 
 function checkGuess() {
-    if (guessSubmitted) return; // Prevent multiple submissions
+    if (guessSubmitted) return;
 
     const guess = parseInt(document.getElementById('guess-input').value) || 0;
     const expected = mode === 'batch' ? window.expectedValue : omittedValue;
@@ -378,7 +392,7 @@ function checkGuess() {
     }
 
     guessSubmitted = true;
-    document.getElementById('submit-guess').disabled = true; // Disable button
+    document.getElementById('submit-guess').disabled = true;
 
     updateAccuracy();
 
@@ -391,12 +405,12 @@ function checkGuess() {
     }
 
     document.getElementById('guess-input').value = '';
-    document.getElementById('guess-input').blur(); // Remove focus
+    document.getElementById('guess-input').blur();
 
     if (mode === 'batch') {
         setTimeout(() => {
             document.getElementById('feedback').innerText = '';
-            startBatch(); // Auto-start next batch
+            startBatch();
         }, 3000);
     }
 }
