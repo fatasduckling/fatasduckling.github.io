@@ -76,7 +76,7 @@
             display: block;
             border: 2px solid gold;
         }
-        /* Perfect Circle Settings Button with ⚙ (U+2699) */
+        /* Perfect Circle Settings Button - Fixed for original gear emoji */
         #settings-btn {
             position: fixed;
             top: 15px;
@@ -84,7 +84,7 @@
             z-index: 200;
             background: linear-gradient(to bottom, #e6b800, #c3992a);
             color: white;
-            font-size: 32px;
+            font-size: 28px;
             border-radius: 50%;
             width: 70px;
             height: 70px;
@@ -96,7 +96,12 @@
             justify-content: center;
             padding: 0;
             border: none;
-            line-height: 1;
+            overflow: hidden; /* Prevents emoji overflow */
+        }
+        #settings-btn::before {
+            content: '⚙️';
+            display: block;
+            transform: scaleX(0.85); /* Squishes the wide emoji horizontally to fit perfectly */
         }
         #settings-btn:hover {
             background: linear-gradient(to bottom, #ffcc00, #d4af37);
@@ -204,7 +209,7 @@
             #settings-btn {
                 width: 60px;
                 height: 60px;
-                font-size: 28px;
+                font-size: 24px;
             }
             #feedback {
                 font-size: 28px;
@@ -213,8 +218,8 @@
     </style>
 </head>
 <body>
-<!-- Perfect Circle Settings Button with ⚙ (U+2699) -->
-<button id="settings-btn" title="Settings">⚙</button>
+<!-- Perfect Circle Settings Button with original gear emoji (fixed) -->
+<button id="settings-btn" title="Settings"></button>
 <!-- Overlay & Settings Menu -->
 <div id="overlay"></div>
 <div id="settings-menu">
@@ -257,6 +262,7 @@
     <button id="back-to-menu" onclick="location.href='index.html'">← Back to Menu</button>
 </div>
 <script>
+// (JavaScript unchanged)
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 let fullDeck = [];
