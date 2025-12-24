@@ -29,8 +29,8 @@
             margin-bottom: 30px;
             text-shadow: 0 2px 4px black;
         }
-        .section { 
-            margin: 30px 0; 
+        .section {
+            margin: 30px 0;
         }
         .cards {
             display: flex;
@@ -59,8 +59,8 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.4);
             min-width: 200px;
         }
-        button:hover { 
-            background: linear-gradient(to bottom, #e6c54a, #d4af37); 
+        button:hover {
+            background: linear-gradient(to bottom, #e6c54a, #d4af37);
             transform: translateY(-2px);
         }
         button:active {
@@ -76,7 +76,7 @@
             display: block;
             border: 2px solid gold;
         }
-        /* Settings Button */
+        /* Settings Button - Perfect Circle */
         #settings-btn {
             position: fixed;
             top: 15px;
@@ -92,6 +92,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1;
         }
         #settings-btn:hover {
             background: #d4af37;
@@ -158,16 +159,16 @@
             background: rgba(0,0,0,0.8);
             z-index: 99;
         }
-        #feedback { 
-            font-size: 32px; 
-            margin: 30px; 
-            min-height: 60px; 
+        #feedback {
+            font-size: 32px;
+            margin: 30px;
+            min-height: 60px;
             font-weight: bold;
         }
-        #omitted-reveal { 
-            font-size: 26px; 
-            margin: 30px 0; 
-            min-height: 200px; 
+        #omitted-reveal {
+            font-size: 26px;
+            margin: 30px 0;
+            min-height: 200px;
         }
         #back-to-menu {
             margin-top: 50px;
@@ -209,7 +210,6 @@
 <body>
 <!-- Settings Button -->
 <button id="settings-btn" title="Settings">⚙️</button>
-
 <!-- Overlay & Settings Menu -->
 <div id="overlay"></div>
 <div id="settings-menu">
@@ -223,10 +223,9 @@
     </div>
     <button id="apply-settings-btn">Apply & Close</button>
 </div>
-
 <div id="game">
     <h1>Speed Counting Trainer (Premium)</h1>
-  
+ 
     <div class="section">
         <label>Mode:</label><br>
         <select id="mode-select">
@@ -234,21 +233,21 @@
             <option value="deck">Deck Mode (guess omitted card)</option>
         </select>
     </div>
-  
+ 
     <div class="section">
         <p>Correct: <span id="correct">0</span> | Total: <span id="total">0</span> | Accuracy: <span id="accuracy">0%</span></p>
     </div>
-  
+ 
     <div class="section" id="batch-controls">
         <button id="start-batch">Start New Batch</button>
     </div>
-  
+ 
     <div class="section" id="deck-controls" style="display:none;">
         <button id="start-deck">Start Full Deck</button>
     </div>
-  
+ 
     <div class="section cards" id="cards-display"></div>
-  
+ 
     <div class="section" id="guess-section" style="display:none;">
         <p id="prompt">What is the running count?</p>
         <input type="number" id="guess-input" placeholder="Enter value">
@@ -256,12 +255,10 @@
         <div id="feedback"></div>
         <div id="omitted-reveal"></div>
     </div>
-  
+ 
     <button id="back-to-menu" onclick="location.href='index.html'">← Back to Menu</button>
 </div>
-
 <script>
-// (All original JavaScript logic remains unchanged)
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 let fullDeck = [];
@@ -271,17 +268,21 @@ let correct = 0;
 let total = 0;
 let mode = 'batch';
 let cardDelay = 800;
+let currentTimeout = null;  // To track and clear any ongoing deck mode timeout
+
 function createFullDeck() {
     fullDeck = [];
     suits.forEach(s => ranks.forEach(r => fullDeck.push(r + s)));
     fullDeck.sort(() => Math.random() - 0.5);
 }
+
 function getHiLoValue(card) {
     const r = card.slice(0, -1);
     if (['2','3','4','5','6'].includes(r)) return 1;
     if (['10','J','Q','K','A'].includes(r)) return -1;
     return 0;
 }
+
 function getCardImageHTML(card) {
     const suitMap = { '♠': 'spades', '♥': 'hearts', '♦': 'diamonds', '♣': 'clubs' };
     const rankMap = { 'A': 'ace', 'J': 'jack', 'Q': 'queen', 'K': 'king' };
@@ -290,18 +291,26 @@ function getCardImageHTML(card) {
     const fileName = `${rankMap[r] || r}_of_${suitMap[s]}.svg`.toLowerCase();
     return `<img src="cards/${fileName}" class="card-img" alt="${card}">`;
 }
+
 function updateAccuracy() {
     const pct = total === 0 ? 0 : Math.round((correct / total) * 100);
     document.getElementById('accuracy').innerText = `${pct}%`;
     document.getElementById('correct').innerText = correct;
     document.getElementById('total').innerText = total;
 }
+
 function startBatch() {
+    // Clear any ongoing deck mode timeout to prevent glitching
+    if (currentTimeout) {
+        clearTimeout(currentTimeout);
+        currentTimeout = null;
+    }
+
     createFullDeck();
     const numCards = Math.floor(Math.random() * 6) + 5; // 5-10
     const shownCards = fullDeck.slice(0, numCards);
     const runningCount = shownCards.reduce((sum, c) => sum + getHiLoValue(c), 0);
-  
+ 
     document.getElementById('cards-display').innerHTML = shownCards.map(getCardImageHTML).join('');
     document.getElementById('prompt').innerText = 'What is the running count for these cards?';
     document.getElementById('guess-section').style.display = 'block';
@@ -309,40 +318,50 @@ function startBatch() {
     document.getElementById('omitted-reveal').innerHTML = '';
     document.getElementById('guess-input').value = '';
     document.getElementById('guess-input').focus();
-  
+ 
     window.expectedValue = runningCount;
 }
+
 function startDeckMode() {
+    // Clear any previous timeout just in case
+    if (currentTimeout) {
+        clearTimeout(currentTimeout);
+        currentTimeout = null;
+    }
+
     createFullDeck();
     const omitIndex = Math.floor(Math.random() * 52);
     omittedCard = fullDeck.splice(omitIndex, 1)[0];
     omittedValue = getHiLoValue(omittedCard);
-  
+ 
     document.getElementById('cards-display').innerHTML = '';
     document.getElementById('guess-section').style.display = 'none';
     document.getElementById('feedback').innerText = '';
     document.getElementById('omitted-reveal').innerHTML = '';
-  
+ 
     nextCardInDeck();
 }
+
 function nextCardInDeck() {
     if (fullDeck.length === 0) {
         document.getElementById('prompt').innerText = 'One card was omitted. What was its Hi-Lo value? (+1, 0, or -1)';
         document.getElementById('guess-section').style.display = 'block';
         document.getElementById('guess-input').value = '';
         document.getElementById('guess-input').focus();
+        currentTimeout = null;
         return;
     }
-  
+ 
     const card = fullDeck.pop();
     document.getElementById('cards-display').innerHTML = getCardImageHTML(card);
-  
-    setTimeout(nextCardInDeck, cardDelay);
+ 
+    currentTimeout = setTimeout(nextCardInDeck, cardDelay);
 }
+
 function checkGuess() {
     const guess = parseInt(document.getElementById('guess-input').value) || 0;
     const expected = mode === 'batch' ? window.expectedValue : omittedValue;
-  
+ 
     total++;
     if (guess === expected) {
         correct++;
@@ -353,7 +372,7 @@ function checkGuess() {
         document.getElementById('feedback').style.color = 'red';
     }
     updateAccuracy();
-  
+ 
     if (mode === 'deck' && omittedCard) {
         document.getElementById('omitted-reveal').innerHTML =
             `<p>The omitted card was:</p>` + getCardImageHTML(omittedCard) +
@@ -361,7 +380,7 @@ function checkGuess() {
     } else {
         document.getElementById('omitted-reveal').innerHTML = '';
     }
-  
+ 
     document.getElementById('guess-input').value = '';
     document.getElementById('guess-input').focus();
     if (mode === 'batch') {
@@ -373,6 +392,7 @@ function checkGuess() {
         document.getElementById('feedback').innerText = '';
     }
 }
+
 // Settings
 document.getElementById('settings-btn').onclick = () => {
     document.getElementById('settings-menu').style.display = 'block';
@@ -392,6 +412,7 @@ document.getElementById('overlay').onclick = () => {
 document.getElementById('default-speed').oninput = function() {
     document.getElementById('default-speed-value').innerText = `${this.value} ms`;
 };
+
 // Mode switch
 document.getElementById('mode-select').onchange = function() {
     mode = this.value;
@@ -401,7 +422,14 @@ document.getElementById('mode-select').onchange = function() {
     document.getElementById('guess-section').style.display = 'none';
     document.getElementById('omitted-reveal').innerHTML = '';
     document.getElementById('feedback').innerText = '';
+
+    // Clear any ongoing deck mode animation
+    if (currentTimeout) {
+        clearTimeout(currentTimeout);
+        currentTimeout = null;
+    }
 };
+
 document.getElementById('start-batch').onclick = startBatch;
 document.getElementById('start-deck').onclick = startDeckMode;
 document.getElementById('submit-guess').onclick = checkGuess;
