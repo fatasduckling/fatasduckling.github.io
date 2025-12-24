@@ -5,134 +5,266 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>How to Card Count – Hi-Lo System</title>
     <style>
-        body { 
-            background: #0b6623; 
-            color: white; 
-            font-family: Arial, sans-serif; 
-            text-align: left; 
-            padding: 20px; 
+        body {
+            background: linear-gradient(to bottom, #0b6623, #084f1a);
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: left;
+            padding: 20px;
             line-height: 1.8;
+            margin: 0;
+            min-height: 100vh;
         }
-        h1 { text-align: center; margin-bottom: 30px; }
-        h2 { color: gold; margin-top: 40px; border-bottom: 1px solid gold; padding-bottom: 10px; }
-        p { max-width: 900px; margin: 20px auto; font-size: 18px; }
-        ul { max-width: 900px; margin: 20px auto; font-size: 18px; }
-        li { margin-bottom: 15px; }
-        strong { color: gold; }
-        .highlight { 
-            background: rgba(255,215,0,0.2); 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            font-weight: bold; 
+        h1 {
+            text-align: center;
+            margin: 40px 0 20px;
+            font-size: 34px;
+            text-shadow: 0 3px 6px black;
         }
-        table { 
-            width: 80%; 
-            max-width: 600px; 
-            margin: 30px auto; 
-            border-collapse: collapse; 
-            font-size: 18px; 
+        .intro {
+            text-align: center;
+            font-size: 22px;
+            max-width: 900px;
+            margin: 0 auto 50px;
+            padding: 25px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
         }
-        th, td { 
-            padding: 15px; 
-            text-align: center; 
-            border: 1px solid gold; 
+        h2 {
+            color: gold;
+            margin: 60px 0 20px;
+            text-align: center;
+            font-size: 28px;
+            text-shadow: 0 2px 4px black;
+            position: relative;
         }
-        th { background: rgba(0,0,0,0.4); color: gold; }
+        h2:after {
+            content: '';
+            display: block;
+            width: 150px;
+            height: 3px;
+            background: gold;
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+        .section {
+            max-width: 900px;
+            margin: 0 auto 40px;
+            padding: 30px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+        }
+        p {
+            font-size: 19px;
+            margin: 20px 0;
+        }
+        ul {
+            font-size: 19px;
+            padding-left: 40px;
+            margin: 25px 0;
+        }
+        li {
+            margin-bottom: 18px;
+        }
+        strong {
+            color: gold;
+            font-size: 20px;
+        }
+        .highlight {
+            background: rgba(255,215,0,0.2);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        table {
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 19px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        th, td {
+            padding: 18px 15px;
+            text-align: center;
+        }
+        th {
+            background: rgba(0,0,0,0.6);
+            color: gold;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .positive {
+            background: rgba(0,200,0,0.6);
+            font-weight: bold;
+            font-size: 22px;
+        }
+        .neutral {
+            background: rgba(100,100,100,0.6);
+        }
+        .negative {
+            background: rgba(200,0,0,0.6);
+            font-weight: bold;
+            font-size: 22px;
+        }
         .back-btn {
             display: block;
-            width: 200px;
-            margin: 50px auto;
-            padding: 15px;
-            background: #888;
+            width: 260px;
+            margin: 70px auto;
+            padding: 20px;
+            background: linear-gradient(to bottom, #aaa, #888);
             color: white;
             text-align: center;
-            font-size: 20px;
-            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 15px;
             text-decoration: none;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            transition: all 0.3s;
         }
-        .back-btn:hover { background: #aaa; }
+        .back-btn:hover {
+            background: linear-gradient(to bottom, #ccc, #aaa);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.7);
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 28px; }
+            .intro { font-size: 19px; padding: 20px; }
+            h2 { font-size: 24px; }
+            p, ul { font-size: 17px; }
+            .section { padding: 20px; }
+            table { font-size: 16px; }
+            th, td { padding: 14px 10px; }
+            .back-btn { width: 220px; font-size: 20px; padding: 16px; }
+        }
     </style>
 </head>
 <body>
+    <h1>How to Card Count<br><small style="font-size:18px;">The Hi-Lo System – Complete Guide</small></h1>
+    
+    <p class="intro">
+        <strong>The Hi-Lo system is the most popular, balanced, and effective card counting method for beginners and pros alike.</strong><br>
+        It’s simple to learn, powerful in practice, and gives you a real mathematical edge over the casino.
+    </p>
 
-    <h1>How to Card Count – Hi-Lo System</h1>
+    <div class="section">
+        <h2>Why Card Counting Works</h2>
+        <p>When more high cards (10s and Aces) remain in the deck, the player gains a significant advantage:</p>
+        <ul>
+            <li>More natural blackjacks (higher 3:2 payouts)</li>
+            <li>Better odds when doubling or splitting</li>
+            <li>Dealer is more likely to bust on stiff hands (12–16)</li>
+        </ul>
+        <p>When low cards dominate, the house has the edge. By tracking the ratio of high to low cards, you know exactly when to increase your bets.</p>
+    </div>
 
-    <p style="text-align:center; font-size:20px;"><strong>The Hi-Lo system is the most popular, balanced, and effective card counting method for beginners and pros alike.</strong></p>
+    <div class="section">
+        <h2>Hi-Lo Card Values</h2>
+        <table>
+            <tr>
+                <th>Cards</th>
+                <th>2, 3, 4, 5, 6</th>
+                <th>7, 8, 9</th>
+                <th>10, J, Q, K, A</th>
+            </tr>
+            <tr>
+                <td><strong>Count Value</strong></td>
+                <td class="positive">+1</td>
+                <td class="neutral">0</td>
+                <td class="negative">-1</td>
+            </tr>
+        </table>
+        <p>As each card is dealt (including dealer’s and all players’), mentally add or subtract its value from your running total.</p>
+    </div>
 
-    <h2>Why Card Counting Works</h2>
-    <p>When more high cards (10, J, Q, K, A) remain in the deck, the player has an advantage:</p>
-    <ul>
-        <li>More blackjacks (higher payout)</li>
-        <li>Better chance to double/split successfully</li>
-        <li>Dealer more likely to bust on low upcards</li>
-    </ul>
-    <p>When more low cards remain, the advantage shifts to the house. By tracking the ratio of high to low cards, you know when to bet more.</p>
+    <div class="section">
+        <h2>Running Count (RC)</h2>
+        <p>The ongoing total you maintain in your head throughout the shoe.</p>
+        <ul>
+            <li>Starts at 0 after a fresh shuffle</li>
+            <li>Goes up when low cards (2–6) are played</li>
+            <li>Goes down when high cards (10–A) are played</li>
+        </ul>
+        <p><strong>Example:</strong> Cards seen: 4 (+1), 8 (0), King (-1), 3 (+1) → Running Count = +1</p>
+    </div>
 
-    <h2>Hi-Lo Card Values</h2>
-    <table>
-        <tr>
-            <th>Cards</th>
-            <th>2 3 4 5 6</th>
-            <th>7 8 9</th>
-            <th>10 J Q K A</th>
-        </tr>
-        <tr>
-            <td><strong>Count</strong></td>
-            <td><span class="highlight">+1</span></td>
-            <td>0</td>
-            <td><span class="highlight">-1</span></td>
-        </tr>
-    </table>
-    <p>As each card is dealt, mentally add or subtract its value from a running total.</p>
+    <div class="section">
+        <h2>True Count (TC) – The Key to Accuracy</h2>
+        <p>In multi-deck games, Running Count alone isn’t enough. Convert it to True Count for accurate betting and playing decisions.</p>
+        <p class="highlight">True Count = Running Count ÷ Decks Remaining</p>
+        <p>(Estimate decks left visually or by cards seen. Round to nearest half-deck for simplicity.)</p>
+        <p><strong>Example:</strong> RC = +10 with 2.5 decks left → TC = +4 → Strong player advantage!</p>
+        <p>Higher True Count = more high cards remaining = bet bigger and play aggressively.</p>
+    </div>
 
-    <h2>Running Count (RC)</h2>
-    <p>The cumulative total you keep in your head as cards are dealt.</p>
-    <ul>
-        <li>Starts at 0 at the beginning of a new shoe</li>
-        <li>Increases when low cards (2–6) come out</li>
-        <li>Decreases when high cards (10–A) come out</li>
-    </ul>
-    <p><strong>Example:</strong> Cards dealt: 4 (+1), 8 (0), K (-1), 3 (+1) → Running Count = +1</p>
+    <div class="section">
+        <h2>Betting Strategy (Bet Spread)</h2>
+        <p>Adjust your bet size based on the True Count to capitalize on your edge.</p>
+        <table>
+            <tr>
+                <th>True Count</th>
+                <th>Recommended Bet</th>
+                <th>Reason</th>
+            </tr>
+            <tr>
+                <td>≤ +1</td>
+                <td>1 unit (table minimum)</td>
+                <td>Neutral or slight house edge</td>
+            </tr>
+            <tr>
+                <td>+2 to +3</td>
+                <td>4–6 units</td>
+                <td>Growing player advantage</td>
+            </tr>
+            <tr>
+                <td>+4 or higher</td>
+                <td>8–12 units (max spread)</td>
+                <td>Strong advantage – go big!</td>
+            </tr>
+            <tr>
+                <td>Negative</td>
+                <td>1 unit</td>
+                <td>House edge – minimize losses</td>
+            </tr>
+        </table>
+        <p>Use a conservative spread (e.g., 1-to-12) to avoid casino heat. Vary bets naturally.</p>
+    </div>
 
-    <h2>True Count (TC) – The Real Advantage Indicator</h2>
-    <p>Running Count alone isn’t enough in multi-deck games. You must divide by the number of decks remaining.</p>
-    <p><strong>True Count = Running Count ÷ Decks Remaining</strong> (round down or to nearest 0.5)</p>
-    <p><strong>Example:</strong> RC = +8, 2 decks left → TC = +4 (very favorable!)</p>
-    <p>Higher True Count = more high cards left = bet bigger!</p>
+    <div class="section">
+        <h2>Playing Deviations (Index Plays)</h2>
+        <p>At specific True Counts, deviate from basic strategy for extra profit.</p>
+        <ul>
+            <li><strong>Insurance:</strong> Always take at TC +3 or higher (most valuable single play)</li>
+            <li><strong>16 vs 10:</strong> Stand at TC 0 or higher</li>
+            <li><strong>15 vs 10:</strong> Stand at TC +4 or higher</li>
+            <li>And 14 more key deviations (see Illustrious 18 chart)</li>
+        </ul>
+        <p>These small changes add ~0.5% edge when used correctly.</p>
+    </div>
 
-    <h2>Betting Strategy (Bet Spread)</h2>
-    <p>Adjust your bet size based on the True Count.</p>
-    <table>
-        <tr><th>True Count</th><th>Bet Size (Units)</th><th>Reason</th></tr>
-        <tr><td>≤ +1</td><td>1 unit (minimum)</td><td>Neutral or house edge</td></tr>
-        <tr><td>+2 to +3</td><td>4–6 units</td><td>Small advantage</td></tr>
-        <tr><td>+4 or higher</td><td>8–12 units</td><td>Strong advantage – max bet</td></tr>
-        <tr><td>Negative</td><td>1 unit</td><td>Avoid playing if possible</td></tr>
-    </table>
-    <p>Spread conservatively to avoid detection (e.g., 1–12 units).</p>
+    <div class="section">
+        <h2>Tips for Success & Longevity</h2>
+        <ul>
+            <li>Practice single-deck counting until it’s automatic and effortless</li>
+            <li>Use this app’s trainer to drill speed, accuracy, and deviations</li>
+            <li>Keep your count silently – no mouthing numbers or obvious gestures</li>
+            <li>Camouflage play: occasionally make “dumb” moves and vary bet patterns</li>
+            <li>Play rated for comps, but avoid excessive heat</li>
+            <li>Bankroll: 200–300× max bet to survive variance</li>
+            <li>Start low stakes until you’re consistently accurate under pressure</li>
+        </ul>
+        <p style="text-align:center; font-size:22px; margin-top:30px;">
+            <strong>Card counting is 100% legal and, with discipline and practice, turns blackjack into a positive-expectation game.</strong>
+        </p>
+    </div>
 
-    <h2>Playing Deviations (Index Plays)</h2>
-    <p>At certain True Counts, deviate from basic strategy for extra edge.</p>
-    <ul>
-        <li><strong>Insurance:</strong> Take at TC +3 or higher</li>
-        <li><strong>16 vs 10:</strong> Stand at TC 0 or higher</li>
-        <li><strong>15 vs 10:</strong> Stand at TC +4 or higher</li>
-        <li>And 14 more key plays (Illustrious 18)</li>
-    </ul>
-    <p>These small adjustments add significant long-term profit.</p>
-
-    <h2>Tips for Success</h2>
-    <ul>
-        <li>Practice with a single deck until counting is automatic</li>
-        <li>Use this app’s Speed Counting mode for cancellation drills</li>
-        <li>Keep the count quietly – no talking or big gestures</li>
-        <li>Vary bet spread naturally and play rated to avoid heat</li>
-        <li>Start with low stakes until accurate under pressure</li>
-    </ul>
-
-    <p style="text-align:center; font-size:20px;"><strong>Card counting is legal and powerful — with discipline and practice, you can turn blackjack into a positive expectation game.</strong></p>
-
-    <a href="index.html" class="back-btn">← Back to Menu</a>
-
+    <a href="index.html" class="back-btn">← Back to Main Menu</a>
 </body>
 </html>
