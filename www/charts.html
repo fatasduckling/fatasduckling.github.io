@@ -174,7 +174,7 @@
             <div class="legend-item"><span class="legend-color s"></span> S = Stand</div>
             <div class="legend-item"><span class="legend-color d"></span> D = Double Down</div>
             <div class="legend-item"><span class="legend-color sp"></span> SP = Split</div>
-            <div class="legend-item"><span class="legend-color su"></span> SU = Surrender</div>
+            <div class="legend-item"><span class="legend-color su"></span> SU = Surrender (else Hit or Stand depending on base)</div>
         </div>
         <table id="strategy-table">
             <!-- Dynamically generated -->
@@ -195,9 +195,9 @@
         const strategyData = {
             "4-8-deck-shoe-hits-soft-17-surrender": {
                 hard: [
-                    { total: '17+', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'SU', 'SU', 'SU'] },
-                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'SU', 'H'] },
+                    { total: '17', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'SU'] },
+                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'SU', 'SU', 'SU'] },
+                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'SU', 'SU'] },
                     { total: '14', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
                     { total: '13', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
                     { total: '12', row: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
@@ -207,8 +207,9 @@
                     { total: '8', row: ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'] }
                 ],
                 soft: [
-                    { total: 'A,8-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { total: 'A,7', row: ['S', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
+                    { total: 'A,9-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,8', row: ['S', 'S', 'S', 'S', 'D', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,7', row: ['D', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
                     { total: 'A,6', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
                     { total: 'A,5', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
                     { total: 'A,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
@@ -219,7 +220,7 @@
                     { pair: 'A,A', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
                     { pair: '10,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
                     { pair: '9,9', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'S', 'SP', 'SP', 'S', 'S'] },
-                    { pair: '8,8', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
+                    { pair: '8,8', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SU'] },
                     { pair: '7,7', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
                     { pair: '6,6', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H', 'H'] },
                     { pair: '5,5', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
@@ -231,12 +232,12 @@
             "4-8-deck-shoe-stays-soft-17-surrender": {
                 hard: [
                     { total: '17+', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'SU', 'SU'] },
-                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'SU', 'SU', 'SU'] },
+                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'SU', 'H'] },
                     { total: '14', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
                     { total: '13', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
                     { total: '12', row: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'] },
+                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H'] },
                     { total: '10', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
                     { total: '9', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
                     { total: '8', row: ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'] }
@@ -277,8 +278,9 @@
                     { total: '8', row: ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'] }
                 ],
                 soft: [
-                    { total: 'A,8-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { total: 'A,7', row: ['S', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
+                    { total: 'A,9-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,8', row: ['S', 'S', 'S', 'S', 'D', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,7', row: ['D', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
                     { total: 'A,6', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
                     { total: 'A,5', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
                     { total: 'A,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
@@ -306,77 +308,7 @@
                     { total: '14', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
                     { total: '13', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
                     { total: '12', row: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'] },
-                    { total: '10', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
-                    { total: '9', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '8', row: ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'] }
-                ],
-                soft: [
-                    { total: 'A,8-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { total: 'A,7', row: ['S', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
-                    { total: 'A,6', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: 'A,5', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: 'A,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: 'A,3', row: ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: 'A,2', row: ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] }
-                ],
-                pairs: [
-                    { pair: 'A,A', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
-                    { pair: '10,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { pair: '9,9', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'S', 'SP', 'SP', 'S', 'S'] },
-                    { pair: '8,8', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
-                    { pair: '7,7', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
-                    { pair: '6,6', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H', 'H'] },
-                    { pair: '5,5', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
-                    { pair: '4,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { pair: '3,3', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
-                    { pair: '2,2', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] }
-                ]
-            },
-            "4-8-deck-shoe-hits-soft-17": {
-                hard: [
-                    { total: '17+', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '14', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '13', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '12', row: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'] },
-                    { total: '10', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
-                    { total: '9', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '8', row: ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'] }
-                ],
-                soft: [
-                    { total: 'A,8-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { total: 'A,7', row: ['S', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
-                    { total: 'A,6', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: 'A,5', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: 'A,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: 'A,3', row: ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: 'A,2', row: ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] }
-                ],
-                pairs: [
-                    { pair: 'A,A', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
-                    { pair: '10,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { pair: '9,9', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'S', 'SP', 'SP', 'S', 'S'] },
-                    { pair: '8,8', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
-                    { pair: '7,7', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
-                    { pair: '6,6', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H', 'H'] },
-                    { pair: '5,5', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
-                    { pair: '4,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
-                    { pair: '3,3', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
-                    { pair: '2,2', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] }
-                ]
-            },
-            "4-8-deck-shoe-stays-soft-17": {
-                hard: [
-                    { total: '17+', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
-                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '14', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '13', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '12', row: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
-                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'] },
+                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H'] },
                     { total: '10', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
                     { total: '9', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
                     { total: '8', row: ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'] }
@@ -417,7 +349,44 @@
                     { total: '8', row: ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'] }
                 ],
                 soft: [
-                    { total: 'A,8-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,9-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,8', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,7', row: ['D', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
+                    { total: 'A,6', row: ['D', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,5', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,3', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,2', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] }
+                ],
+                pairs: [
+                    { pair: 'A,A', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
+                    { pair: '10,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { pair: '9,9', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'S', 'SP', 'SP', 'S', 'S'] },
+                    { pair: '8,8', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
+                    { pair: '7,7', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H'] },
+                    { pair: '6,6', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
+                    { pair: '5,5', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
+                    { pair: '4,4', row: ['H', 'H', 'H', 'SP', 'SP', 'H', 'H', 'H', 'H', 'H'] },
+                    { pair: '3,3', row: ['H', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H'] },
+                    { pair: '2,2', row: ['H', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H'] }
+                ]
+            },
+            "double-deck-stays-soft-17": {
+                hard: [
+                    { total: '17+', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '14', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '13', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '12', row: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H'] },
+                    { total: '10', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
+                    { total: '9', row: ['D', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '8', row: ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'] }
+                ],
+                soft: [
+                    { total: 'A,9-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,8', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
                     { total: 'A,7', row: ['S', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
                     { total: 'A,6', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
                     { total: 'A,5', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
@@ -427,4 +396,151 @@
                 ],
                 pairs: [
                     { pair: 'A,A', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
-                    { pair: '10,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S
+                    { pair: '10,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { pair: '9,9', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'S', 'SP', 'SP', 'S', 'S'] },
+                    { pair: '8,8', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
+                    { pair: '7,7', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
+                    { pair: '6,6', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H', 'H'] },
+                    { pair: '5,5', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
+                    { pair: '4,4', row: ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { pair: '3,3', row: ['H', 'H', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
+                    { pair: '2,2', row: ['H', 'H', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] }
+                ]
+            },
+            "single-deck-hits-soft-17": {
+                hard: [
+                    { total: '17+', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '14', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '13', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '12', row: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'] },
+                    { total: '10', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H'] },
+                    { total: '9', row: ['D', 'D', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H'] },
+                    { total: '8', row: ['H', 'H', 'H', 'H', 'D', 'H', 'H', 'H', 'H', 'H'] }
+                ],
+                soft: [
+                    { total: 'A,9-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,8', row: ['S', 'S', 'S', 'S', 'D', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,7', row: ['D', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
+                    { total: 'A,6', row: ['D', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,5', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,3', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,2', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] }
+                ],
+                pairs: [
+                    { pair: 'A,A', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
+                    { pair: '10,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { pair: '9,9', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'S', 'SP', 'SP', 'S', 'S'] },
+                    { pair: '8,8', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
+                    { pair: '7,7', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H'] },
+                    { pair: '6,6', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
+                    { pair: '5,5', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'] },
+                    { pair: '4,4', row: ['H', 'H', 'H', 'SP', 'SP', 'H', 'H', 'H', 'H', 'H'] },
+                    { pair: '3,3', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H'] },
+                    { pair: '2,2', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H'] }
+                ]
+            },
+            "single-deck-stays-soft-17": {
+                hard: [
+                    { total: '17+', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: '16', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '15', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '14', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '13', row: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '12', row: ['H', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: '11', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'] },
+                    { total: '10', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'] },
+                    { total: '9', row: ['D', 'D', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H'] },
+                    { total: '8', row: ['H', 'H', 'H', 'H', 'D', 'H', 'H', 'H', 'H', 'H'] }
+                ],
+                soft: [
+                    { total: 'A,9-A,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,8', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { total: 'A,7', row: ['S', 'D', 'D', 'D', 'D', 'S', 'S', 'H', 'H', 'H'] },
+                    { total: 'A,6', row: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,5', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,4', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,3', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { total: 'A,2', row: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] }
+                ],
+                pairs: [
+                    { pair: 'A,A', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
+                    { pair: '10,10', row: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'] },
+                    { pair: '9,9', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'S', 'SP', 'SP', 'S', 'S'] },
+                    { pair: '8,8', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'SP'] },
+                    { pair: '7,7', row: ['SP', 'SP', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
+                    { pair: '6,6', row: ['H', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H', 'H'] },
+                    { pair: '5,5', row: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'] },
+                    { pair: '4,4', row: ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'] },
+                    { pair: '3,3', row: ['H', 'H', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] },
+                    { pair: '2,2', row: ['H', 'H', 'SP', 'SP', 'SP', 'SP', 'H', 'H', 'H', 'H'] }
+                ]
+            }
+        };
+
+        function showChart() {
+            var gameType = document.getElementById('game-select').value;
+            var data = strategyData[gameType];
+            if (!data) return;
+            var table = document.getElementById('strategy-table');
+            table.innerHTML = '';
+            // Dealer upcards header
+            var dealerUp = ['Player Hand', 'vs 2', 'vs 3', 'vs 4', 'vs 5', 'vs 6', 'vs 7', 'vs 8', 'vs 9', 'vs 10', 'vs A'];
+            var headerTr = document.createElement('tr');
+            dealerUp.forEach(function(text) {
+                var th = document.createElement('th');
+                th.innerText = text;
+                headerTr.appendChild(th);
+            });
+            table.appendChild(headerTr);
+            // Hard totals
+            data.hard.forEach(function(row) {
+                var tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.innerText = row.total;
+                tr.appendChild(td);
+                row.row.forEach(function(action) {
+                    var td = document.createElement('td');
+                    td.className = action.toLowerCase();
+                    td.innerText = action;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            // Soft totals
+            data.soft.forEach(function(row) {
+                var tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.innerText = row.total;
+                tr.appendChild(td);
+                row.row.forEach(function(action) {
+                    var td = document.createElement('td');
+                    td.className = action.toLowerCase();
+                    td.innerText = action;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            // Pairs
+            data.pairs.forEach(function(row) {
+                var tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.innerText = row.pair;
+                tr.appendChild(td);
+                row.row.forEach(function(action) {
+                    var td = document.createElement('td');
+                    td.className = action.toLowerCase();
+                    td.innerText = action;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            document.getElementById('chart-container').style.display = 'block';
+            document.getElementById('chart-title').innerText = titles[gameType];
+        }
+    </script>
+</body>
+</html>
