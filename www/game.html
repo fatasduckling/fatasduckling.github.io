@@ -70,7 +70,6 @@
             transition: all 0.2s;
         }
         button:hover { opacity: 0.9; transform: translateY(-2px); }
-        /* All legal/playable actions are always golden */
         button.legal {
             background: linear-gradient(to bottom, #e6b800, #c3992a) !important;
             box-shadow: 0 6px 12px rgba(195,153,42,0.5);
@@ -78,7 +77,6 @@
         button.legal:hover {
             background: linear-gradient(to bottom, #ffcc00, #d4af37) !important;
         }
-        /* Highlight correct move (green/orange) - controlled by setting */
         button.correct {
             background: linear-gradient(to bottom, #00ff00, #009900) !important;
             box-shadow: 0 6px 12px rgba(0,255,0,0.5);
@@ -87,7 +85,6 @@
             background: linear-gradient(to bottom, #ffaa00, #cc7700) !important;
             box-shadow: 0 6px 12px rgba(255,170,0,0.5);
         }
-        /* PERFECT CIRCLE SETTINGS BUTTON */
         #settings-btn {
             position: fixed;
             top: 20px;
@@ -204,11 +201,34 @@
                 font-size: 24px;
             }
         }
+
+        /* Shuffling Popup */
+        #shuffle-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: gold;
+            font-size: 28px;
+            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 15px;
+            border: 3px solid gold;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            z-index: 300;
+            text-shadow: 0 2px 4px black;
+        }
     </style>
 </head>
 <body>
 <button id="settings-btn" title="Settings">⚙️</button>
 <div id="overlay"></div>
+
+<!-- Shuffling Popup -->
+<div id="shuffle-popup">Shuffling...</div>
+
 <div id="settings-menu">
     <h2>Game Settings</h2>
     <div class="settings-grid">
@@ -336,11 +356,43 @@ let totalDecisions = 0, correctDecisions = 0, totalCountGuesses = 0, correctCoun
 let numDecks = 1, dealerHitsSoft17 = true, surrenderEnabled = true, bjPayout = 1.5;
 let countingEnabled = true, guessCountEnabled = true, doubleAfterSplit = true;
 let numSimultaneousHands = 1;
-let highlightCorrectMoves = false; // Default OFF as requested
+let highlightCorrectMoves = false;
+
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-const illustrious18 = { insurance: 3, '16vs10': 0, '15vs10': 4, '11vsA': 1, '10vs10': 4, '10vsA': 3, '12vs3': 2, '12vs2': 3, '9vs2': 1, '9vs7': 3, '8vs6': 2, '13vs2': -1, '12vs4': 0, '12vs5': -1, '12vs6': -2, '1010vs5': 5, '1010vs6': 4, '16vs9': 5 };
+
+// Illustrious 18 + Fab 4 only
+const illustrious18 = { 
+    insurance: 3, 
+    '16vs10': 0, 
+    '15vs10': 4, 
+    '11vsA': 1, 
+    '10vs10': 4, 
+    '10vsA': 3, 
+    '12vs3': 2, 
+    '12vs2': 3, 
+    '9vs2': 1, 
+    '9vs7': 3, 
+    '8vs6': 2, 
+    '13vs2': -1, 
+    '12vs4': 0, 
+    '12vs5': -1, 
+    '12vs6': -2, 
+    '1010vs5': 5, 
+    '1010vs6': 4, 
+    '16vs9': 5 
+};
 const fab4 = { '15vs9': 3, '15vs10': 0, '15vsA': 2, '14vs10': 4 };
+
+// Show shuffling popup
+function showShufflePopup() {
+    const popup = document.getElementById('shuffle-popup');
+    popup.style.display = 'block';
+    setTimeout(() => {
+        popup.style.display = 'none';
+    }, 1500);
+}
+
 function createDeck() {
     deck = [];
     for (let d = 0; d < numDecks; d++) {
@@ -348,13 +400,16 @@ function createDeck() {
     }
     shuffle(deck);
     seenCards = [];
+    showShufflePopup();
 }
+
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
+
 function dealCard(toArray) {
     if (deck.length < 20) createDeck();
     const card = deck.pop();
@@ -362,15 +417,18 @@ function dealCard(toArray) {
     seenCards.push(card);
     return card;
 }
+
 function rankValue(card) {
     const r = card.slice(0, -1);
     if (r === 'A') return 'A';
     if (['J','Q','K'].includes(r)) return '10';
     return r;
 }
+
 function isSplittable(handObj) {
     return handObj.cards.length === 2 && rankValue(handObj.cards[0]) === rankValue(handObj.cards[1]) && playerHands.length < 4;
 }
+
 function handTotal(handObj) {
     let total = 0, aces = 0;
     handObj.cards.forEach(c => {
@@ -382,6 +440,7 @@ function handTotal(handObj) {
     while (total > 21 && aces--) total -= 10;
     return total;
 }
+
 function isSoftHand(handObj) {
     let total = 0, aces = 0;
     handObj.cards.forEach(c => {
@@ -392,6 +451,7 @@ function isSoftHand(handObj) {
     });
     return aces > 0 && total - 10 * aces <= 11;
 }
+
 function getHiLoRC() {
     return seenCards.reduce((sum, c) => {
         const r = c.slice(0, -1);
@@ -400,17 +460,20 @@ function getHiLoRC() {
         return sum;
     }, 0);
 }
+
 function getTrueCount() {
     const rc = getHiLoRC();
     const decksLeft = Math.max(0.5, deck.length / 52);
     return Math.round((rc / decksLeft) * 10) / 10;
 }
+
 function getUpcardValue() {
     const up = dealerHand[0]?.slice(0, -1);
     if (!up) return null;
     if (up === 'A') return 'A';
     return (['J','Q','K'].includes(up)) ? 10 : parseInt(up);
 }
+
 function getCardImageHTML(card) {
     const suitMap = { '♠': 'spades', '♥': 'hearts', '♦': 'diamonds', '♣': 'clubs' };
     const rankMap = { 'A': 'ace', 'J': 'jack', 'Q': 'queen', 'K': 'king' };
@@ -419,6 +482,7 @@ function getCardImageHTML(card) {
     const fileName = `${rankMap[r] || r}_of_${suitMap[s]}.svg`.toLowerCase();
     return `<img src="cards/${fileName}" class="card-img" alt="${card}">`;
 }
+
 function getCorrectActions(handObj) {
     const hand = handObj.cards;
     const total = handTotal(handObj);
@@ -429,6 +493,7 @@ function getCorrectActions(handObj) {
     const isSoft = isSoftHand(handObj);
     const basicCorrect = new Set();
     const deviationCorrect = new Set();
+
     if (countingEnabled) {
         if (up === 'A' && tc >= illustrious18.insurance) deviationCorrect.add('insurance');
         if (total === 16 && up === 10 && tc >= illustrious18['16vs10']) deviationCorrect.add('stand');
@@ -451,12 +516,15 @@ function getCorrectActions(handObj) {
             if (up === 6 && tc >= illustrious18['1010vs6']) deviationCorrect.add('stand');
         }
     }
+
     if (countingEnabled && surrenderEnabled && hand.length === 2) {
         if (total === 15 && up === 9 && tc >= fab4['15vs9']) deviationCorrect.add('surrender');
         if (total === 15 && up === 10 && tc >= fab4['15vs10']) deviationCorrect.add('surrender');
         if (total === 15 && up === 'A' && tc >= fab4['15vsA']) deviationCorrect.add('surrender');
         if (total === 14 && up === 10 && tc >= fab4['14vs10']) deviationCorrect.add('surrender');
     }
+
+    // Basic Strategy
     if (hand.length === 2) {
         if (rank === 'A' || rank === '8') basicCorrect.add('split');
         if (rank === '9' && ![7].includes(up)) basicCorrect.add('split');
@@ -487,8 +555,10 @@ function getCorrectActions(handObj) {
         if (total >= 12 && total <= 16 && up <= 6) basicCorrect.add('stand');
         if (total >= 12 && total <= 16 && up >= 7) basicCorrect.add('hit');
     }
+
     return { basic: basicCorrect, deviation: deviationCorrect };
 }
+
 function updatePlayerHandsDisplay() {
     const container = document.getElementById('player-hands-container');
     container.innerHTML = '';
@@ -503,6 +573,7 @@ function updatePlayerHandsDisplay() {
         container.appendChild(div);
     });
 }
+
 function updateActionButtons() {
     const container = document.getElementById('actions');
     container.innerHTML = '';
@@ -519,7 +590,7 @@ function updateActionButtons() {
             const btn = document.createElement('button');
             btn.textContent = act.charAt(0).toUpperCase() + act.slice(1);
             btn.onclick = () => playerMove(act);
-            btn.classList.add('legal'); // All playable actions are golden
+            btn.classList.add('legal');
             if (highlightCorrectMoves) {
                 if (allCorrect.has(act)) {
                     btn.classList.add('correct');
@@ -530,32 +601,35 @@ function updateActionButtons() {
         }
     });
 }
+
 function playerMove(action) {
     const handObj = playerHands[currentHandIndex];
     const { basic, deviation } = getCorrectActions(handObj);
     const allCorrect = new Set([...basic, ...deviation]);
     totalDecisions++;
     let msg = '';
+
     if (allCorrect.has(action)) {
         correctDecisions++;
         msg = '✓ Correct!';
+        if (deviation.has(action)) {
+            msg += ' (Deviation)';
+        }
         document.getElementById('feedback').style.color = 'lime';
     } else {
         msg = '✗ Wrong!';
-        let correctMoves;
-        if (deviation.size > 0) {
-            correctMoves = deviation;
-            msg += ' (Deviation play)';
-        } else {
-            correctMoves = basic;
-        }
+        let correctMoves = deviation.size > 0 ? deviation : basic;
         if (correctMoves.size > 0) {
             const moveTexts = [...correctMoves].map(m => m.charAt(0).toUpperCase() + m.slice(1));
             msg += ' Correct: ' + moveTexts.join(' or ');
+            if (deviation.size > 0) {
+                msg += ' (Deviation play)';
+            }
         }
         document.getElementById('feedback').style.color = 'red';
     }
     document.getElementById('feedback').innerText = msg;
+
     if (action === 'hit') {
         dealCard(handObj.cards);
         if (handTotal(handObj) > 21) moveToNextHand();
@@ -581,6 +655,7 @@ function playerMove(action) {
     }
     updateDisplay();
 }
+
 function moveToNextHand() {
     currentHandIndex++;
     if (currentHandIndex >= playerHands.length) {
@@ -589,6 +664,7 @@ function moveToNextHand() {
         updateDisplay();
     }
 }
+
 function dealerPlay() {
     gamePhase = 'dealer';
     updateDisplay();
@@ -605,6 +681,7 @@ function dealerPlay() {
     };
     setTimeout(step, 800);
 }
+
 function evaluateAllHands() {
     const dTotal = handTotal({cards: dealerHand});
     playerHands.forEach(h => {
@@ -624,6 +701,7 @@ function evaluateAllHands() {
     }
     updateDisplay();
 }
+
 function updateDisplay() {
     document.getElementById('bankroll').innerText = bankroll.toLocaleString();
     document.getElementById('decks-left').innerText = (deck.length / 52).toFixed(1);
@@ -645,6 +723,7 @@ function updateDisplay() {
     document.getElementById('end-round').style.display = gamePhase === 'endround' ? 'block' : 'none';
     if (gamePhase === 'playing') updateActionButtons();
 }
+
 function startHand() {
     betPerHand = parseInt(document.getElementById('bet-input').value) || 25;
     if (betPerHand * numSimultaneousHands > bankroll) { alert("Insufficient funds!"); return; }
@@ -660,12 +739,13 @@ function startHand() {
     if (dealerHand[0]?.startsWith('A')) gamePhase = 'insurance';
     updateDisplay();
 }
+
 document.getElementById('insurance-yes').onclick = () => {
     const { deviation } = getCorrectActions({cards: playerHands[0].cards});
     totalDecisions++;
     if (deviation.has('insurance')) {
         correctDecisions++;
-        document.getElementById('feedback').innerText = "✓ Correct insurance deviation!";
+        document.getElementById('feedback').innerText = "✓ Correct (Deviation)";
         document.getElementById('feedback').style.color = "lime";
     } else {
         document.getElementById('feedback').innerText = "✗ Wrong – no insurance needed";
@@ -675,12 +755,13 @@ document.getElementById('insurance-yes').onclick = () => {
     gamePhase = 'playing';
     updateDisplay();
 };
+
 document.getElementById('insurance-no').onclick = () => {
     const { deviation } = getCorrectActions({cards: playerHands[0].cards});
     totalDecisions++;
     if (!deviation.has('insurance')) {
         correctDecisions++;
-        document.getElementById('feedback').innerText = "✓ Correct – no insurance";
+        document.getElementById('feedback').innerText = "✓ Correct";
         document.getElementById('feedback').style.color = "lime";
     } else {
         document.getElementById('feedback').innerText = "✗ Missed deviation – take insurance!";
@@ -689,6 +770,7 @@ document.getElementById('insurance-no').onclick = () => {
     gamePhase = 'playing';
     updateDisplay();
 };
+
 document.getElementById('check-count-btn').onclick = () => {
     const actual = getHiLoRC();
     const guess = parseInt(document.getElementById('count-guess').value) || 0;
@@ -711,6 +793,7 @@ document.getElementById('check-count-btn').onclick = () => {
         updateDisplay();
     }, 2000);
 };
+
 function applySettings() {
     numDecks = parseInt(document.getElementById('num-decks').value);
     dealerHitsSoft17 = document.getElementById('soft17').value === 'true';
@@ -727,12 +810,15 @@ function applySettings() {
     createDeck();
     updateDisplay();
 }
+
 document.getElementById('settings-btn').onclick = () => {
     document.getElementById('settings-menu').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
 };
+
 document.getElementById('apply-settings-btn').onclick = applySettings;
 document.getElementById('deal-button').onclick = startHand;
+
 createDeck();
 updateDisplay();
 </script>
