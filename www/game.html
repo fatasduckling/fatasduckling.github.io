@@ -542,10 +542,17 @@ function playerMove(action) {
         document.getElementById('feedback').style.color = 'lime';
     } else {
         msg = '✗ Wrong!';
-        const correctList = [];
-        if (deviation.size > 0) correctList.push(...deviation);
-        correctList.push(...basic);
-        msg += ` Correct: ${[...new Set(correctList)].map(a => a.toUpperCase()).join(' or ')}`;
+        let correctMoves;
+        if (deviation.size > 0) {
+            correctMoves = deviation;
+            msg += ' (Deviation play)';
+        } else {
+            correctMoves = basic;
+        }
+        if (correctMoves.size > 0) {
+            const moveTexts = [...correctMoves].map(m => m.charAt(0).toUpperCase() + m.slice(1));
+            msg += ' Correct: ' + moveTexts.join(' or ');
+        }
         document.getElementById('feedback').style.color = 'red';
     }
     document.getElementById('feedback').innerText = msg;
